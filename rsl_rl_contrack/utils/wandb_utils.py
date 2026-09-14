@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import atexit
 import os
+import uuid
 from dataclasses import asdict
 from torch.utils.tensorboard import SummaryWriter
 
@@ -83,7 +84,7 @@ class WandbSummaryWriter(SummaryWriter):
                     if run_id:
                         break
         if not run_id:
-            run_id = wandb.util.generate_id()
+            run_id = uuid.uuid4().hex[:8]
         if not os.path.isfile(run_id_path):
             open(run_id_path, "w").write(run_id)
 
