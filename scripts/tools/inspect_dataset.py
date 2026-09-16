@@ -15,6 +15,10 @@ Also save joint-angle and object-trajectory plots:
 
 Also render an offline animation of the object motion (no robot mesh, no Isaac Sim):
     python scripts/tools/inspect_dataset.py --data <path.h5> --video --video-stride 2
+
+Plot the raw object mesh in its own local frame (to pick axes/coordinates for a custom
+center-of-mass offset such as OBJECT_COM_OFFSET, without reasoning about world rotations):
+    python scripts/tools/inspect_dataset.py --data <path.h5> --mesh-plot
 """
 
 from __future__ import annotations
@@ -140,6 +144,49 @@ def plot_object_trajectories(f: h5py.File, out_dir: Path) -> None:
     print(f"[saved] {out_path}")
 
 
+def plot_object_mesh(f: h5py.File, out_dir: Path, obj_key: str | None) -> None:
+    """Plot a raw object mesh in its own local frame, with no rotation/translation applied.
+
+    This is the same local frame used by ``physics:centerOfMass`` overrides (e.g. ``OBJECT_COM_OFFSET``
+    in the env cfg), so reading the axis ranges off this plot tells you which direction/coordinates to
+    use for a custom center-of-mass offset (e.g. biasing toward a hammer head) without needing to reason
+    about the per-frame world rotation at all.
+
+    Parameters
+    ----------
+    f : h5py.File
+        Open HDF5 file handle exposing ``object_tracks/<key>/vertices`` (V, 3) and ``faces`` (F, 3).
+    out_dir : Path
+        Directory to save ``object_<key>_local_mesh.png`` into.
+    obj_key : str | None
+        Which object to plot; defaults to the first key in ``object_tracks`` when ``None``.
+    """
+    import matplotlib
+
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+
+    obj_keys = list(f["object_tracks"].keys())
+    key = obj_key if obj_key is not None else obj_keys[0]
+    v = np.asarray(f["object_tracks"][key]["vertices"], dtype=np.float32)
+    tri = np.asarray(f["object_tracks"][key]["faces"], dtype=np.int64)
+    centroid = v.mean(axis=0)
+
+    fig = plt.figure(figsize=(7, 7))
+    ax = fig.add_subplot(projection="3d")
+    ax.plot_trisurf(v[:, 0], v[:, 1], v[:, 2], triangles=tri, linewidth=0.1, antialiased=True, alpha=0.8)
+    ax.scatter(*centroid, color="red", s=80, marker="o", label=f"centroid ({centroid[0]:.4f}, {centroid[1]:.4f}, {centroid[2]:.4f})")
+    ax.set_xlabel(f"local x  [{v[:, 0].min():.4f}, {v[:, 0].max():.4f}]")
+    ax.set_ylabel(f"local y  [{v[:, 1].min():.4f}, {v[:, 1].max():.4f}]")
+    ax.set_zlabel(f"local z  [{v[:, 2].min():.4f}, {v[:, 2].max():.4f}]")
+    ax.set_title(f"object_{key} mesh in its own local frame (no rotation/translation)")
+    ax.legend(loc="upper left", fontsize=8)
+    out_path = out_dir / f"object_{key}_local_mesh.png"
+    fig.savefig(out_path, dpi=150)
+    plt.close(fig)
+    print(f"[saved] {out_path}")
+
+
 def render_video(f: h5py.File, out_dir: Path, fps: float, stride: int) -> None:
     """Render an offline 3D animation of the object mesh motion to MP4.
 
@@ -234,6 +281,18 @@ def main() -> None:
         default=1,
         help="Use every Nth frame when rendering the video (speeds up rendering for long clips).",
     )
+    parser.add_argument(
+        "--mesh-plot",
+        action="store_true",
+        help="Plot a raw object mesh in its own local frame (no rotation/translation) to help pick "
+        "axis/coordinates for a custom center-of-mass offset (e.g. OBJECT_COM_OFFSET).",
+    )
+    parser.add_argument(
+        "--object-key",
+        type=str,
+        default=None,
+        help="Which object_tracks key to use for --mesh-plot (default: the first object in the file).",
+    )
     args = parser.parse_args()
 
     data_path = Path(args.data).resolve()
@@ -248,6 +307,8 @@ def main() -> None:
         if args.video:
             fps = float(np.max(np.asarray(f["fps"], dtype=np.float32)))
             render_video(f, out_dir, fps=fps, stride=args.video_stride)
+        if args.mesh_plot:
+            plot_object_mesh(f, out_dir, obj_key=args.object_key)
 
     print(f"\nOutputs saved to: {out_dir}")
 
