@@ -91,6 +91,10 @@ THRESHOLD_CURRICULUM_SR_HIGH = 0.999
 
 # Physics
 OBJECT_DENSITY = 200.0
+# Absolute center-of-mass coordinate in the object's local mesh frame (meters). (0, 0, 0) means "let PhysX
+# auto-compute it from uniform density + shape" (skips the override). Non-zero biases mass toward that point,
+# e.g. toward a hammer head instead of the shape's natural (density-weighted) centroid.
+OBJECT_COM_OFFSET = (-0.05, 0.01, 0.0)
 OBJECT_CONTACT_OFFSET = 1e-2
 OBJECT_REST_OFFSET = 0.0
 USD_CACHE_DIR = (REPO_ROOT / "assets" / "usd_cache" / DATA_PATH.stem).resolve()
@@ -138,7 +142,10 @@ def spawn_ref_usd_mesh(
     rb = UsdPhysics.RigidBodyAPI.Apply(prim)
     rb.CreateRigidBodyEnabledAttr().Set(True)
     rb.CreateKinematicEnabledAttr().Set(False)
-    UsdPhysics.MassAPI.Apply(prim).CreateDensityAttr().Set(OBJECT_DENSITY)
+    mass_api = UsdPhysics.MassAPI.Apply(prim)
+    mass_api.CreateDensityAttr().Set(OBJECT_DENSITY)
+    if OBJECT_COM_OFFSET != (0.0, 0.0, 0.0):
+        mass_api.CreateCenterOfMassAttr().Set(Gf.Vec3f(*OBJECT_COM_OFFSET))
     return prim
 
 
@@ -241,6 +248,7 @@ with h5py.File(DATA_PATH, "r") as _f:
             + _tri.tobytes()
             + f"{OBJECT_DENSITY}_{OBJECT_CONTACT_OFFSET}_{OBJECT_REST_OFFSET}".encode()
             + f"_{CONVEX_DECOMP_HULL_VERTEX_LIMIT}_{CONVEX_DECOMP_MAX_CONVEX_HULLS}_{CONVEX_DECOMP_VOXEL_RESOLUTION}_{CONVEX_DECOMP_ERROR_PERCENTAGE}".encode()
+            + f"_{OBJECT_COM_OFFSET}".encode()
         )
         _usd_path = USD_CACHE_DIR / f"{_h.hexdigest()[:16]}.usd"
         if not _usd_path.exists():
@@ -257,7 +265,10 @@ with h5py.File(DATA_PATH, "r") as _f:
             _rb = UsdPhysics.RigidBodyAPI.Apply(_root)
             _rb.CreateRigidBodyEnabledAttr().Set(True)
             _rb.CreateKinematicEnabledAttr().Set(False)
-            UsdPhysics.MassAPI.Apply(_root).CreateDensityAttr().Set(OBJECT_DENSITY)
+            _mass_api = UsdPhysics.MassAPI.Apply(_root)
+            _mass_api.CreateDensityAttr().Set(OBJECT_DENSITY)
+            if OBJECT_COM_OFFSET != (0.0, 0.0, 0.0):
+                _mass_api.CreateCenterOfMassAttr().Set(Gf.Vec3f(*OBJECT_COM_OFFSET))
             _c = UsdPhysics.CollisionAPI.Apply(_mesh.GetPrim())
             _c.CreateCollisionEnabledAttr().Set(True)
             _pc = PhysxSchema.PhysxCollisionAPI.Apply(_mesh.GetPrim())
