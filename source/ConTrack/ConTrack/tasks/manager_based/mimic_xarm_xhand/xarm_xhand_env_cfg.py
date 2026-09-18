@@ -90,11 +90,11 @@ THRESHOLD_CURRICULUM_SR_LOW = 0.9
 THRESHOLD_CURRICULUM_SR_HIGH = 0.999
 
 # Physics
-OBJECT_DENSITY = 200.0
+OBJECT_DENSITY = 800.0
 # Absolute center-of-mass coordinate in the object's local mesh frame (meters). (0, 0, 0) means "let PhysX
 # auto-compute it from uniform density + shape" (skips the override). Non-zero biases mass toward that point,
 # e.g. toward a hammer head instead of the shape's natural (density-weighted) centroid.
-OBJECT_COM_OFFSET = (-0.05, 0.01, 0.0)
+OBJECT_COM_OFFSET = (-0.09, 0.0, 0.0)
 OBJECT_CONTACT_OFFSET = 1e-2
 OBJECT_REST_OFFSET = 0.0
 USD_CACHE_DIR = (REPO_ROOT / "assets" / "usd_cache" / DATA_PATH.stem).resolve()
