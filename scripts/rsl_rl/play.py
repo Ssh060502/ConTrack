@@ -125,15 +125,27 @@ def main(
     policy = runner.get_inference_policy(device=env.unwrapped.device)
     obs = env.get_observations()
     timestep = 0
+    episode_logs: dict[str, list[float]] = {}
 
     while simulation_app.is_running() and timestep < args_cli.video_length:
         with torch.inference_mode():
             actions = policy(obs)
-            obs, _, dones, _ = env.step(actions)
+            obs, _, dones, extras = env.step(actions)
             runner.alg.policy.reset(dones)
+        if "log" in extras:
+            for k, v in extras["log"].items():
+                episode_logs.setdefault(k, []).append(float(v))
         timestep += 1
 
     env.close()
+
+    if episode_logs:
+        print("\n=== Episode statistics over this rollout ===")
+        for k in sorted(episode_logs.keys()):
+            vals = episode_logs[k]
+            print(f"{k:40s} mean={sum(vals) / len(vals):.4f}  n={len(vals)}")
+    else:
+        print("\n[warn] no episodes finished during this rollout; increase --video_length or --num_envs")
 
 
 if __name__ == "__main__":
