@@ -93,13 +93,17 @@ THRESHOLD_CURRICULUM_SR_HIGH = 0.999
 # Both overridable via env vars so you can A/B test different mass properties against the same trained
 # checkpoint without editing/re-syncing this file each time, e.g.:
 #   CONTRACK_OBJECT_DENSITY=200.0 CONTRACK_OBJECT_COM_OFFSET=0.0,0.0,0.0 python scripts/rsl_rl/play.py ...
-OBJECT_DENSITY = float(os.environ.get("CONTRACK_OBJECT_DENSITY", "800.0"))
+OBJECT_DENSITY = float(os.environ.get("CONTRACK_OBJECT_DENSITY", "200.0"))
 # Absolute center-of-mass coordinate in the object's local mesh frame (meters). (0, 0, 0) means "let PhysX
 # auto-compute it from uniform density + shape" (skips the override). Non-zero biases mass toward that point,
 # e.g. toward a hammer head instead of the shape's natural (density-weighted) centroid.
 OBJECT_COM_OFFSET = tuple(
-    float(x) for x in os.environ.get("CONTRACK_OBJECT_COM_OFFSET", "-0.09,0.0,0.0").split(",")
+    float(x) for x in os.environ.get("CONTRACK_OBJECT_COM_OFFSET", "0.0,0.0,0.0").split(",")
 )
+# Newtons; magnitude of a brief one-step push applied to the object mid-episode. 0 disables it.
+OBJECT_PUSH_FORCE = float(os.environ.get("CONTRACK_OBJECT_PUSH_FORCE", "0.0"))
+# Reference frame index (per-env, matches env.frame_idx) at which the push fires. Ignored if the push is disabled.
+OBJECT_PUSH_FRAME = int(os.environ.get("CONTRACK_OBJECT_PUSH_FRAME", "150"))
 OBJECT_CONTACT_OFFSET = 1e-2
 OBJECT_REST_OFFSET = 0.0
 USD_CACHE_DIR = (REPO_ROOT / "assets" / "usd_cache" / DATA_PATH.stem).resolve()
@@ -537,6 +541,12 @@ class EventCfg:
     )
     advance_frame = EventTerm(
         func=mdp.advance_reference_frame, mode="interval", interval_range_s=(0.0, 0.0)
+    )
+    object_push = EventTerm(
+        func=mdp.apply_object_push,
+        mode="interval",
+        interval_range_s=(0.0, 0.0),
+        params={"force_magnitude": OBJECT_PUSH_FORCE, "force_frame": OBJECT_PUSH_FRAME},
     )
 
 

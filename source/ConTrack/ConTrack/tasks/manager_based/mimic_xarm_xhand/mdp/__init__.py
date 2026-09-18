@@ -33,6 +33,7 @@ from ConTrack.tasks.manager_based.mimic_xarm_xhand.mdp.rewards import (
     tracking_obj_rot,
 )
 from ConTrack.tasks.manager_based.mimic_xarm_xhand.mdp.domain_randomization import (
+    apply_object_push,
     perturb_objects_xy,
     randomize_joint_pd_gains,
 )
@@ -54,6 +55,7 @@ __all__ = [
     "XarmXhandResidualActionCfg",
     "advance_reference_frame",
     "all_qpos",
+    "apply_object_push",
     "all_qvel",
     "delayed_all_qpos",
     "delayed_all_qvel",

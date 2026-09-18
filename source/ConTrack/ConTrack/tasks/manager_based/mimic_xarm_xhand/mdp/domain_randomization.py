@@ -46,6 +46,47 @@ def perturb_objects_xy(env, env_ids, xy_range: float):
     )
 
 
+def apply_object_push(env, env_ids, force_magnitude: float, force_frame: int):
+    """Apply a brief, random-direction horizontal push to the object at one specific reference frame.
+
+    Meant to simulate a sudden disturbance mid-grasp (e.g. a bump). Runs every step (register with
+    ``mode="interval"``, ``interval_range_s=(0.0, 0.0)``, matching ``advance_frame``); each step it writes zero
+    force to every env except the ones whose ``frame_idx`` currently equals ``force_frame``, so the push only
+    acts for the single physics step at which each env crosses that frame.
+
+    Parameters
+    ----------
+    env : isaaclab.envs.ManagerBasedEnv
+        Environment instance exposing ``scene["objects"]`` (RigidObjectCollection), ``frame_idx`` (num_envs,),
+        ``num_objects`` (int) and ``device``.
+    env_ids : Sequence[int] | None
+        Ignored (the event manager passes this for interval-mode events; the push targets whichever envs are
+        currently at ``force_frame``, independent of ``env_ids``).
+    force_magnitude : float
+        Push force in Newtons. ``<= 0`` disables the push entirely (the function returns immediately).
+    force_frame : int
+        The ``frame_idx`` value at which to fire the push, per env.
+
+    Returns
+    -------
+    None
+        Writes a per-env, per-object external force (zero almost everywhere, non-zero for one step per env) to
+        the object rigid bodies. Torque is always zero (pure translational push).
+    """
+    if force_magnitude <= 0.0:
+        return
+    objects = env.scene["objects"]
+    forces = torch.zeros((env.num_envs, env.num_objects, 3), device=env.device)
+    hit = (env.frame_idx == force_frame).nonzero(as_tuple=False).squeeze(-1)
+    if hit.numel() > 0:
+        directions = torch.randn((hit.shape[0], 3), device=env.device)
+        directions[:, 2] = 0.0
+        directions = directions / directions.norm(dim=-1, keepdim=True).clamp(min=1e-6)
+        forces[hit] = (directions * force_magnitude).unsqueeze(1)
+    torques = torch.zeros_like(forces)
+    objects.set_external_force_and_torque(forces, torques)
+
+
 def randomize_joint_pd_gains(
     env,
     env_ids,
