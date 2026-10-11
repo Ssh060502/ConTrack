@@ -143,6 +143,10 @@ class ActorCritic(nn.Module):
             else:
                 raise ValueError(f"Unknown standard deviation type: {self.noise_std_type}. Should be 'scalar' or 'log'")
         mean = torch.tanh(mean)
+        # Clamp std to a safe positive range: unstable hyperparameter combinations (e.g. during a sweep) can push
+        # the raw "scalar"-type std parameter to zero/negative via gradient updates, which would otherwise crash
+        # Normal(mean, std) with "normal expects all elements of std >= 0.0".
+        std = std.clamp(min=1e-6)
         self.distribution = Normal(mean, std)
 
     def act(self, obs: TensorDict, **kwargs: dict[str, Any]) -> torch.Tensor:
