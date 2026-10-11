@@ -80,4 +80,6 @@ command:
   - wandb
   - --log_project_name
   - ConTrack
+  - --wandb_description
+  - teapot_sweep_trial
   - ${args_no_hyphens}
