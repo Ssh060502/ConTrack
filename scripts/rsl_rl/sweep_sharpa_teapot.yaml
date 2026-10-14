@@ -9,7 +9,7 @@
 # Each trial is a full train.py run capped at --max_iterations below (short, for exploration only).
 # Once a promising combination is found, re-run it manually without the cap for a full training run.
 
-project: ConTrack
+project: ConTrack-sweeps
 program: scripts/rsl_rl/train.py
 method: bayes
 metric:
@@ -81,7 +81,7 @@ command:
   - --logger
   - wandb
   - --log_project_name
-  - ConTrack
+  - ConTrack-sweeps
   - --wandb_description
   - sharpa_teapot_sweep_trial
   - ${args_no_hyphens}

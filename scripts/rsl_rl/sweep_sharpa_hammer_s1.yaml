@@ -1,0 +1,86 @@
+# W&B sweep config for tuning PPO/CMDP hyperparameters on the RB-Y1A+Sharpa hammer grasp task (s1).
+# Same search space as the other sharpa sweeps.
+#
+# Usage (on the server, inside the env_isaaclab conda env, from the ConTrack repo root):
+#   wandb sweep scripts/rsl_rl/sweep_sharpa_hammer_s1.yaml
+#   wandb agent <sweep_id_printed_above>
+#
+# Each trial is a full train.py run capped at --max_iterations below (short, for exploration only).
+# Once a promising combination is found, re-run it manually without the cap for a full training run.
+
+project: ConTrack-sweeps
+program: scripts/rsl_rl/train.py
+method: bayes
+metric:
+  name: Train/mean_reward
+  goal: maximize
+
+parameters:
+  agent.algorithm.cmdp_alpha:
+    distribution: uniform
+    min: 0.5
+    max: 0.9
+  agent.algorithm.cmdp_lambda_lr:
+    distribution: log_uniform_values
+    min: 0.01
+    max: 0.2
+  agent.algorithm.cmdp_warmup_iters:
+    distribution: int_uniform
+    min: 0
+    max: 2000
+  agent.algorithm.learning_rate:
+    distribution: log_uniform_values
+    min: 0.0001
+    max: 0.001
+  agent.algorithm.entropy_coef:
+    distribution: log_uniform_values
+    min: 0.0005
+    max: 0.02
+  agent.algorithm.clip_param:
+    distribution: uniform
+    min: 0.1
+    max: 0.3
+  agent.algorithm.gamma:
+    distribution: uniform
+    min: 0.95
+    max: 0.995
+  agent.algorithm.num_learning_epochs:
+    distribution: int_uniform
+    min: 4
+    max: 15
+  agent.policy.init_noise_std:
+    distribution: uniform
+    min: 0.5
+    max: 2.0
+
+early_terminate:
+  type: hyperband
+  min_iter: 500
+  eta: 3
+
+command:
+  - ${env}
+  - python
+  - ${program}
+  - --task
+  - Isaac-Rby1a-Sharpa-Mimic-Manager-v0
+  - --data
+  - /mnt/ssd1/shenghe/datasets/GRAB_contrack/grab-s1_hammer_use_1-rby1a_sharpa.h5
+  - --experiment_name
+  - sharpa_hammer_sweep_s1
+  - --num_envs
+  - "8000"
+  - --save_interval
+  - "500"
+  - --video_num_envs
+  - "0"
+  - --max_iterations
+  - "2000"
+  - --headless
+  - --logger
+  - wandb
+  - --log_project_name
+  - ConTrack-sweeps
+  - --wandb_description
+  - sharpa_hammer_sweep_s1_trial
+  - ${args_no_hyphens}
