@@ -680,7 +680,7 @@ class Rby1aSharpaEnvCfg(ManagerBasedRLEnvCfg):
         self.sim.physx.min_velocity_iteration_count = 2
         self.sim.physx.enable_stabilization = True
         self.sim.physx.solve_articulation_contact_last = True
-        self.sim.physx.gpu_max_rigid_patch_count = 2**19
+        self.sim.physx.gpu_max_rigid_patch_count = 2**20
         self.viewer.eye = (2.2, 2.2, 1.3)
 
 
