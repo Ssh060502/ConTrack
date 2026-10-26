@@ -412,14 +412,12 @@
         <child link="wheel_r" />
         <origin rpy="0.0 0.0 0.0" xyz="0.228 -0.265 0.1" />
         <axis xyz="0 -1 0" />
-        <limit velocity="15.707963268" acceleration="3.141592" />
     </joint>
     <joint name="left_wheel" type="fixed">
         <parent link="base" />
         <child link="wheel_l" />
         <origin rpy="0.0 0.0 0.0" xyz="0.228 0.265 0.1" />
         <axis xyz="0 -1 0" />
-        <limit velocity="15.707963268" acceleration="3.141592" />
     </joint>
     <joint name="torso_0" type="fixed">
         <parent link="base" />
