@@ -657,6 +657,11 @@ def reset_reference_episode(env, env_ids):
         - DELTA,
         min=0,
     )
+    if getattr(env, "force_start_frame0", False):
+        # Opt-in override for deterministic full-length playback (e.g. play.py
+        # --export_rollout). Leaves the curriculum sampling above untouched so
+        # training is unaffected; only the start frame actually used is replaced.
+        start = torch.zeros((n,), dtype=torch.long, device=env.device)
 
     env.reset_lib_reset_index_count.add_(torch.bincount(start, minlength=env.ref_len))
     state = env.reset_lib_state[start]

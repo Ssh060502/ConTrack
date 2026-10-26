@@ -116,6 +116,15 @@ def main(
     if isinstance(env.unwrapped, DirectMARLEnv):
         env = multi_agent_to_single_agent(env)
 
+    if args_cli.export_rollout:
+        # The env's curriculum resets to a random frame of the reference clip by
+        # default (see reset_reference_episode in mdp/state.py), which is what
+        # training wants but makes a recorded rollout start from an arbitrary
+        # mid-clip point instead of the beginning. Force frame 0 here and
+        # re-reset so the export starts from the true beginning of the motion.
+        env.unwrapped.force_start_frame0 = True
+        env.reset()
+
     if args_cli.video:
         env = gym.wrappers.RecordVideo(
             env,
