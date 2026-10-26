@@ -140,7 +140,17 @@ def main(
     episode_logs: dict[str, list[float]] = {}
 
     rollout_frames: list[np.ndarray] | None = [] if args_cli.export_rollout else None
+    rollout_object_pos: list[np.ndarray] | None = [] if args_cli.export_rollout else None
+    rollout_object_quat_xyzw: list[np.ndarray] | None = [] if args_cli.export_rollout else None
     rollout_done = False
+    try:
+        env.unwrapped.scene["objects"]
+        has_objects = True
+    except KeyError:
+        has_objects = False
+    if rollout_frames is not None and not has_objects:
+        print("[warn] --export_rollout: no 'objects' asset in this scene; the saved h5 "
+              "will have no object_tracks group.")
     if rollout_frames is not None and env.unwrapped.num_envs != 1:
         print(
             f"[warn] --export_rollout records only env 0, but num_envs={env.unwrapped.num_envs}. "
@@ -163,6 +173,14 @@ def main(
             for name, joint_ids, h_idx in base_env.ref_hands:
                 frame[h_idx] = base_env.scene[name].data.joint_pos[0, joint_ids].cpu().numpy()
             rollout_frames.append(frame)
+            if has_objects:
+                objects = base_env.scene["objects"]
+                obj_pos = (
+                    objects.data.object_pos_w[0] - base_env.scene.env_origins[0]
+                ).cpu().numpy()  # (O, 3), relative to this env's own origin
+                obj_quat_wxyz = objects.data.object_quat_w[0].cpu().numpy()  # (O, 4)
+                rollout_object_pos.append(obj_pos)
+                rollout_object_quat_xyzw.append(obj_quat_wxyz[:, [1, 2, 3, 0]])
             if bool(dones[0]):
                 rollout_done = True
         timestep += 1
@@ -183,9 +201,17 @@ def main(
                 hf.create_dataset("urdf_name", data=urdf_name)
                 hf.create_dataset("is_rhand", data=is_rhand)
                 hf.create_dataset("fps", data=fps)
+                if has_objects and rollout_object_pos:
+                    object_pos = np.stack(rollout_object_pos, axis=0)  # (T, O, 3)
+                    object_quat_xyzw = np.stack(rollout_object_quat_xyzw, axis=0)  # (T, O, 4)
+                    for obj_idx in range(object_pos.shape[1]):
+                        grp = hf.create_group(f"object_tracks/object_{obj_idx}")
+                        grp.create_dataset("translations", data=object_pos[:, obj_idx])
+                        grp.create_dataset("orientations_xyzw", data=object_quat_xyzw[:, obj_idx])
             print(
                 f"[info] saved rollout qpos to {out_path} "
-                f"(T={qpos.shape[0]}, H={qpos.shape[1]}, stopped_early={rollout_done})"
+                f"(T={qpos.shape[0]}, H={qpos.shape[1]}, stopped_early={rollout_done}, "
+                f"objects_saved={has_objects})"
             )
 
     env.close()
