@@ -165,6 +165,9 @@ def main(
     rollout_object_pos: list[np.ndarray] | None = [] if args_cli.export_rollout else None
     rollout_object_quat_xyzw: list[np.ndarray] | None = [] if args_cli.export_rollout else None
     rollout_done = False
+    rollout_base_pos = []
+    rollout_base_quat_xyzw = []
+    export_rby_base = all(Path(name).name == "rby1a_sharpa.urdf" for name in env.unwrapped.urdf_name)
     try:
         env.unwrapped.scene["objects"]
         has_objects = True
@@ -187,8 +190,20 @@ def main(
         if "log" in extras:
             for k, v in extras["log"].items():
                 episode_logs.setdefault(k, []).append(float(v))
+        # Isaac Lab may already have reset this environment inside step().
+        # Exclude the terminal step from every exported channel together.
+        if rollout_frames is not None and bool(dones[0]):
+            rollout_done = True
         if rollout_frames is not None and not rollout_done:
             base_env = env.unwrapped
+            if export_rby_base:
+                robot = base_env.scene[base_env.ref_hands[0][0]]
+                body_id = robot.body_names.index("base")
+                rollout_base_pos.append(
+                    (robot.data.body_pos_w[0, body_id] - base_env.scene.env_origins[0]).cpu().numpy().copy()
+                )
+                base_quat = robot.data.body_quat_w[0, body_id].cpu().numpy()
+                rollout_base_quat_xyzw.append(base_quat[[1, 2, 3, 0]].copy())
             frame = np.zeros(
                 (len(base_env.ref_hands), base_env.unused_default_qpos.shape[0]), dtype=np.float32
             )
@@ -223,6 +238,12 @@ def main(
                 hf.create_dataset("urdf_name", data=urdf_name)
                 hf.create_dataset("is_rhand", data=is_rhand)
                 hf.create_dataset("fps", data=fps)
+                if rollout_base_pos:
+                    hf.create_dataset("robot_base/translations", data=np.stack(rollout_base_pos))
+                    hf.create_dataset("robot_base/orientations_xyzw", data=np.stack(rollout_base_quat_xyzw))
+                    hf.attrs["robot_base_frame"] = "base"
+                hf.attrs["pose_coordinates"] = "environment origin; orientations_xyzw"
+                hf.attrs["terminal_step_excluded"] = True
                 if has_objects and rollout_object_pos:
                     object_pos = np.stack(rollout_object_pos, axis=0)  # (T, O, 3)
                     object_quat_xyzw = np.stack(rollout_object_quat_xyzw, axis=0)  # (T, O, 4)
