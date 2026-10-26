@@ -21,6 +21,16 @@ parser.add_argument("--num_envs", type=int, default=None)
 parser.add_argument("--task", type=str, default=None)
 parser.add_argument("--data", type=str, default=None)
 parser.add_argument("--session", type=str, default=None)
+parser.add_argument(
+    "--export_rollout",
+    type=str,
+    default=None,
+    help=(
+        "Path to save env 0's rolled-out joint trajectory as an h5 file with the same "
+        "qpos/urdf_name/is_rhand/fps schema as a reference dataset. Run with --num_envs 1 "
+        "for a clean single-episode recording; recording stops at env 0's first episode end."
+    ),
+)
 parser.add_argument("--agent", type=str, default="rsl_rl_cfg_entry_point")
 parser.add_argument("--seed", type=int, default=None)
 cli_args.add_rsl_rl_args(parser)
@@ -60,6 +70,8 @@ app_launcher = AppLauncher(args_cli)
 simulation_app = app_launcher.app
 
 import gymnasium as gym
+import h5py
+import numpy as np
 import torch
 import yaml
 
@@ -127,6 +139,14 @@ def main(
     timestep = 0
     episode_logs: dict[str, list[float]] = {}
 
+    rollout_frames: list[np.ndarray] | None = [] if args_cli.export_rollout else None
+    rollout_done = False
+    if rollout_frames is not None and env.unwrapped.num_envs != 1:
+        print(
+            f"[warn] --export_rollout records only env 0, but num_envs={env.unwrapped.num_envs}. "
+            "Pass --num_envs 1 for a clean single-episode recording."
+        )
+
     while simulation_app.is_running() and timestep < args_cli.video_length:
         with torch.inference_mode():
             actions = policy(obs)
@@ -135,7 +155,38 @@ def main(
         if "log" in extras:
             for k, v in extras["log"].items():
                 episode_logs.setdefault(k, []).append(float(v))
+        if rollout_frames is not None and not rollout_done:
+            base_env = env.unwrapped
+            frame = np.zeros(
+                (len(base_env.ref_hands), base_env.unused_default_qpos.shape[0]), dtype=np.float32
+            )
+            for name, joint_ids, h_idx in base_env.ref_hands:
+                frame[h_idx] = base_env.scene[name].data.joint_pos[0, joint_ids].cpu().numpy()
+            rollout_frames.append(frame)
+            if bool(dones[0]):
+                rollout_done = True
         timestep += 1
+
+    if rollout_frames is not None:
+        if not rollout_frames:
+            print("[warn] --export_rollout given but no frames were recorded")
+        else:
+            base_env = env.unwrapped
+            qpos = np.stack(rollout_frames, axis=0)
+            urdf_name = np.array([s.encode("utf-8") for s in base_env.urdf_name])
+            is_rhand = base_env.is_rhand.cpu().numpy().astype(np.uint8)
+            fps = np.full((qpos.shape[1],), float(base_env.ref_fps), dtype=np.float32)
+            out_path = Path(args_cli.export_rollout).expanduser()
+            out_path.parent.mkdir(parents=True, exist_ok=True)
+            with h5py.File(out_path, "w") as hf:
+                hf.create_dataset("qpos", data=qpos)
+                hf.create_dataset("urdf_name", data=urdf_name)
+                hf.create_dataset("is_rhand", data=is_rhand)
+                hf.create_dataset("fps", data=fps)
+            print(
+                f"[info] saved rollout qpos to {out_path} "
+                f"(T={qpos.shape[0]}, H={qpos.shape[1]}, stopped_early={rollout_done})"
+            )
 
     env.close()
 
