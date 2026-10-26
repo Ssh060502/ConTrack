@@ -28,7 +28,20 @@ parser.add_argument(
     help=(
         "Path to save env 0's rolled-out joint trajectory as an h5 file with the same "
         "qpos/urdf_name/is_rhand/fps schema as a reference dataset. Run with --num_envs 1 "
-        "for a clean single-episode recording; recording stops at env 0's first episode end."
+        "for a clean single-episode recording; recording stops at env 0's first episode end. "
+        "Implies --deterministic_start."
+    ),
+)
+parser.add_argument(
+    "--deterministic_start",
+    action="store_true",
+    default=False,
+    help=(
+        "Force env 0's first episode to start at reference frame 0 instead of the "
+        "training curriculum's random start frame (see force_start_frame0 in "
+        "mdp/state.py). Useful for --video too, not just --export_rollout, so a "
+        "recording shows one full attempt from the true beginning instead of "
+        "jumping mid-clip when the curriculum resets."
     ),
 )
 parser.add_argument("--agent", type=str, default="rsl_rl_cfg_entry_point")
@@ -116,12 +129,12 @@ def main(
     if isinstance(env.unwrapped, DirectMARLEnv):
         env = multi_agent_to_single_agent(env)
 
-    if args_cli.export_rollout:
+    if args_cli.export_rollout or args_cli.deterministic_start:
         # The env's curriculum resets to a random frame of the reference clip by
         # default (see reset_reference_episode in mdp/state.py), which is what
-        # training wants but makes a recorded rollout start from an arbitrary
-        # mid-clip point instead of the beginning. Force frame 0 here and
-        # re-reset so the export starts from the true beginning of the motion.
+        # training wants but makes a recorded rollout/video start from an
+        # arbitrary mid-clip point instead of the beginning. Force frame 0 here
+        # and re-reset so playback starts from the true beginning of the motion.
         env.unwrapped.force_start_frame0 = True
         env.reset()
 
