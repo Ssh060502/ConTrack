@@ -16,6 +16,7 @@ from scripts.rsl_rl import cli_args
 
 parser = argparse.ArgumentParser(description="Play an RSL-RL checkpoint.")
 parser.add_argument("--video", action="store_true", default=False)
+parser.add_argument("--video_folder", type=str, default=None, help="Optional video output directory.")
 parser.add_argument("--video_length", type=int, default=500)
 parser.add_argument("--num_envs", type=int, default=None)
 parser.add_argument("--task", type=str, default=None)
@@ -162,7 +163,7 @@ def main(
     if args_cli.video:
         env = gym.wrappers.RecordVideo(
             env,
-            video_folder=os.path.join(log_dir, "videos", "train"),
+            video_folder=args_cli.video_folder or os.path.join(log_dir, "videos", "train"),
             step_trigger=lambda step: step == 0,
             video_length=args_cli.video_length,
             disable_logger=True,
