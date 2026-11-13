@@ -129,6 +129,27 @@ def main(
     if isinstance(env.unwrapped, DirectMARLEnv):
         env = multi_agent_to_single_agent(env)
 
+    # Report resolved PhysX values, not just the requested density/material settings.
+    # The collection view flattens environments and objects; ranges cover all of them.
+    physics_report = {}
+    if "Rby1a-Sharpa" in args_cli.task:
+        objects = env.unwrapped.scene["objects"]
+        view = objects.root_physx_view
+        for key, values in (
+            ("mass_kg", view.get_masses()),
+            ("inertia_kg_m2", view.get_inertias()),
+            ("material_static_dynamic_restitution", view.get_material_properties()),
+        ):
+            values = values.detach().cpu().numpy()
+            physics_report[key] = values.tolist()
+            print(f"[ConTrack Sharpa physics] {key}: shape={values.shape}, "
+                  f"min={values.min():.6g}, max={values.max():.6g}")
+        physics_report["requested_mass_scale"] = float(
+            os.environ.get("CONTRACK_SHARPA_OBJECT_MASS_SCALE", "1.0")
+        )
+        friction = os.environ.get("CONTRACK_SHARPA_OBJECT_FRICTION")
+        physics_report["requested_object_friction"] = None if friction is None else float(friction)
+
     if args_cli.export_rollout or args_cli.deterministic_start:
         # The env's curriculum resets to a random frame of the reference clip by
         # default (see reset_reference_episode in mdp/state.py), which is what
@@ -234,6 +255,9 @@ def main(
             out_path = Path(args_cli.export_rollout).expanduser()
             out_path.parent.mkdir(parents=True, exist_ok=True)
             with h5py.File(out_path, "w") as hf:
+                if physics_report:
+                    import json
+                    hf.attrs["object_physics_json"] = json.dumps(physics_report)
                 hf.create_dataset("qpos", data=qpos)
                 hf.create_dataset("urdf_name", data=urdf_name)
                 hf.create_dataset("is_rhand", data=is_rhand)

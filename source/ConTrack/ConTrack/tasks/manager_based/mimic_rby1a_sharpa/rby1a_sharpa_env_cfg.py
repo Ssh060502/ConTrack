@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 import hashlib
+import math
 import os
 from pathlib import Path
 
@@ -26,7 +27,7 @@ from isaaclab.sim import SpawnerCfg
 from isaaclab.sim.utils import clone, get_current_stage
 from isaaclab.utils import configclass
 from isaaclab.utils.noise import AdditiveGaussianNoiseCfg
-from pxr import Gf, PhysxSchema, Usd, UsdGeom, UsdPhysics
+from pxr import Gf, PhysxSchema, Usd, UsdGeom, UsdPhysics, UsdShade
 from scipy.spatial.transform import Rotation as R
 
 from ConTrack.robots.rby1a_sharpa import RBY1A_SHARPA_CFG
@@ -92,7 +93,21 @@ THRESHOLD_CURRICULUM_SR_LOW = 0.9
 THRESHOLD_CURRICULUM_SR_HIGH = 0.999
 
 # Physics
-OBJECT_DENSITY = 200.0
+OBJECT_BASE_DENSITY = 200.0
+# Fixed-shape uniform density scaling lets PhysX compute mass AND inertia consistently.
+# These settings apply to every tracked object, and remain fixed for the process.
+OBJECT_MASS_SCALE = float(os.environ.get("CONTRACK_SHARPA_OBJECT_MASS_SCALE", "1.0"))
+if not math.isfinite(OBJECT_MASS_SCALE) or OBJECT_MASS_SCALE <= 0.0:
+    raise ValueError("CONTRACK_SHARPA_OBJECT_MASS_SCALE must be finite and > 0")
+OBJECT_DENSITY = OBJECT_BASE_DENSITY * OBJECT_MASS_SCALE
+if not math.isfinite(OBJECT_DENSITY):
+    raise ValueError("Scaled object density must be finite")
+# None preserves the original material inheritance, rather than binding a new material.
+OBJECT_FRICTION = os.environ.get("CONTRACK_SHARPA_OBJECT_FRICTION")
+if OBJECT_FRICTION is not None:
+    OBJECT_FRICTION = float(OBJECT_FRICTION)
+    if not math.isfinite(OBJECT_FRICTION) or OBJECT_FRICTION < 0.0:
+        raise ValueError("CONTRACK_SHARPA_OBJECT_FRICTION must be finite and >= 0")
 STATIC_FRICTION = 2.0
 DYNAMIC_FRICTION = 2.0
 OBJECT_CONTACT_OFFSET = 1e-2
@@ -105,6 +120,12 @@ CONVEX_DECOMP_HULL_VERTEX_LIMIT = 32
 CONVEX_DECOMP_MAX_CONVEX_HULLS = 8
 CONVEX_DECOMP_VOXEL_RESOLUTION = 100000
 CONVEX_DECOMP_ERROR_PERCENTAGE = 25.0
+
+print(
+    f"[ConTrack Sharpa physics] mass_scale={OBJECT_MASS_SCALE}, "
+    f"density={OBJECT_DENSITY} kg/m^3, "
+    f"object static/dynamic friction={OBJECT_FRICTION if OBJECT_FRICTION is not None else 'original (no override)'}"
+)
 
 
 def disable_unused_hand_collisions(env, env_ids):
@@ -280,6 +301,9 @@ with h5py.File(DATA_PATH, "r") as _f:
             + f"{OBJECT_DENSITY}_{OBJECT_CONTACT_OFFSET}_{OBJECT_REST_OFFSET}".encode()
             + f"_{CONVEX_DECOMP_HULL_VERTEX_LIMIT}_{CONVEX_DECOMP_MAX_CONVEX_HULLS}_{CONVEX_DECOMP_VOXEL_RESOLUTION}_{CONVEX_DECOMP_ERROR_PERCENTAGE}".encode()
         )
+        # Preserve the original cache key when friction is not overridden.
+        if OBJECT_FRICTION is not None:
+            _h.update(f"_object_material_v1_{OBJECT_FRICTION}".encode())
         _usd_path = USD_CACHE_DIR / f"{_h.hexdigest()[:16]}.usd"
         if not _usd_path.exists():
             _stage = Usd.Stage.CreateNew(str(_usd_path))
@@ -298,6 +322,20 @@ with h5py.File(DATA_PATH, "r") as _f:
             UsdPhysics.MassAPI.Apply(_root).CreateDensityAttr().Set(OBJECT_DENSITY)
             _c = UsdPhysics.CollisionAPI.Apply(_mesh.GetPrim())
             _c.CreateCollisionEnabledAttr().Set(True)
+            if OBJECT_FRICTION is not None:
+                _material = UsdShade.Material.Define(_stage, "/Object/PhysicsMaterial")
+                _material_api = UsdPhysics.MaterialAPI.Apply(_material.GetPrim())
+                _material_api.CreateStaticFrictionAttr().Set(OBJECT_FRICTION)
+                _material_api.CreateDynamicFrictionAttr().Set(OBJECT_FRICTION)
+                _material_api.CreateRestitutionAttr().Set(0.0)
+                _physx_material = PhysxSchema.PhysxMaterialAPI.Apply(_material.GetPrim())
+                _physx_material.CreateFrictionCombineModeAttr().Set("multiply")
+                _physx_material.CreateRestitutionCombineModeAttr().Set("multiply")
+                UsdShade.MaterialBindingAPI.Apply(_mesh.GetPrim()).Bind(
+                    _material,
+                    bindingStrength=UsdShade.Tokens.strongerThanDescendants,
+                    materialPurpose="physics",
+                )
             _pc = PhysxSchema.PhysxCollisionAPI.Apply(_mesh.GetPrim())
             _pc.CreateContactOffsetAttr().Set(OBJECT_CONTACT_OFFSET)
             _pc.CreateRestOffsetAttr().Set(OBJECT_REST_OFFSET)
