@@ -3,24 +3,34 @@
 set -euo pipefail
 
 usage() {
-    echo 'Usage: bash scripts/run_hammer.sh [--mass-scale NUMBER] [--friction NUMBER]'
-    echo 'Defaults: mass scale 1.0; friction retains original material inheritance.'
+    echo 'Usage: bash scripts/run_hammer.sh [--gpu INDEX] [--mass-scale NUMBER] [--friction NUMBER]'
+    echo 'Defaults: GPU 0; mass scale 1.0; friction retains original material inheritance.'
 }
 MASS_SCALE="1.0"
 FRICTION=""
+GPU="0"
 while [[ $# -gt 0 ]]; do
     case "$1" in
-        --mass-scale|--friction)
+        --mass-scale|--friction|--gpu)
             if [[ $# -lt 2 || "$2" == --* || -z "$2" ]]; then
                 printf 'Missing value for %s\n' "$1" >&2
                 exit 2
             fi
-            if [[ "$1" == --mass-scale ]]; then MASS_SCALE="$2"; else FRICTION="$2"; fi
+            case "$1" in
+                --mass-scale) MASS_SCALE="$2" ;;
+                --friction) FRICTION="$2" ;;
+                --gpu) GPU="$2" ;;
+            esac
             shift 2 ;;
         -h|--help) usage; exit 0 ;;
         *) printf 'Unknown argument: %s\n' "$1" >&2; usage >&2; exit 2 ;;
     esac
 done
+
+if [[ ! "$GPU" =~ ^(0|[1-9][0-9]*)$ ]]; then
+    printf 'Invalid --gpu: expected a nonnegative integer, got %s\n' "$GPU" >&2
+    exit 2
+fi
 
 # Validate and normalize before creating outputs or starting Isaac Sim.
 NORMALIZED="$(python - "$MASS_SCALE" "$FRICTION" <<'PY'
@@ -66,10 +76,10 @@ unset CONTRACK_SHARPA_OBJECT_FRICTION
 if [[ "$FRICTION_TAG" != original ]]; then
     export CONTRACK_SHARPA_OBJECT_FRICTION="$FRICTION_TAG"
 fi
-export CUDA_VISIBLE_DEVICES=0
+export CUDA_VISIBLE_DEVICES="$GPU"
 
-printf 'Checkpoint: %s\nReference: %s\nMass scale: %s\nObject friction: %s\nOutputs: %s\n' \
-    "$CHECKPOINT" "$DATA" "$MASS_SCALE" "$FRICTION_TAG" "$OUTPUT_DIR" | tee "$OUTPUT_DIR/run.log"
+printf 'Checkpoint: %s\nReference: %s\nGPU (CUDA_VISIBLE_DEVICES): %s\nMass scale: %s\nObject friction: %s\nOutputs: %s\n' \
+    "$CHECKPOINT" "$DATA" "$GPU" "$MASS_SCALE" "$FRICTION_TAG" "$OUTPUT_DIR" | tee "$OUTPUT_DIR/run.log"
 
 python -u scripts/rsl_rl/play.py \
     --task Isaac-Rby1a-Sharpa-Mimic-Manager-v0 \
@@ -77,6 +87,7 @@ python -u scripts/rsl_rl/play.py \
     --checkpoint "$CHECKPOINT" \
     --data "$DATA" \
     --num_envs 1 \
+    --device cuda:0 \
     --seed 42 \
     --headless \
     --video \
