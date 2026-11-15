@@ -55,7 +55,7 @@ REPO_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$REPO_ROOT"
 
 SESSION="$REPO_ROOT/logs/rsl_rl/sharpa_fryingpan_sweep/grab-s1_fryingpan_cook_2-rby1a_sharpa-2026_10_14-06_39_27-sharpa_fryingpan_sweep_trial"
-CHECKPOINT="$SESSION/model_1000.pt"
+CHECKPOINT="$SESSION/model_1500.pt"
 DATA="/mnt/ssd1/shenghe/datasets/GRAB_contrack/grab-s1_fryingpan_cook_2-rby1a_sharpa.h5"
 
 for required_file in "$CHECKPOINT" "$DATA" "$SESSION/params/agent.yaml" "$SESSION/params/env.yaml"; do
