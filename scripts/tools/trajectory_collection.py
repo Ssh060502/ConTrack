@@ -19,8 +19,11 @@ def numpy(value):
 
 def diagnostic_pose_term(original):
     """Wrap the configured termination term at its actual evaluation point."""
-    def evaluate(env, **kwargs):
-        result = original(env, **kwargs)
+    # Isaac Lab validates the signature literally; a **kwargs parameter is
+    # interpreted as an unconfigured required term parameter in this version.
+    # The Sharpa obj_pose_exceeded term takes only env.
+    def evaluate(env):
+        result = original(env)
         idx = torch.clamp(env.frame_idx, max=env.ref_len - 1)
         objects = env.scene["objects"].data
         position = objects.object_pos_w - env.scene.env_origins.unsqueeze(1)
