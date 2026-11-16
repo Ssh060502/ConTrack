@@ -32,6 +32,18 @@ def check(path):
                 if done[:-1].any() or bool(done[-1]) != bool(group.attrs["completed"]):
                     raise ValueError("Episode crosses a reset or has an invalid final done flag")
                 reasons = [k for k, v in group["transitions/termination"].items() if bool(v[-1])]
+                if "diagnostics" in group["transitions"]:
+                    diagnostic = group["transitions/diagnostics"]
+                    position_hit = diagnostic["position_error"][:] > diagnostic["position_threshold"][: , None]
+                    rotation_hit = diagnostic["rotation_error_rad"][:] > diagnostic["rotation_threshold_rad"][:, None]
+                    expected = np.any(position_hit | rotation_hit, axis=-1)
+                    if not np.array_equal(expected, diagnostic["pose_break"][:]):
+                        raise ValueError("Pose diagnostic differs from termination evaluation")
+                    if not np.array_equal(expected, group["transitions/termination/pose_break"][:]):
+                        raise ValueError("Recorded termination flag differs from diagnostic")
+                    print("  termination frame:", diagnostic["reference_frame"][-1],
+                          "position error:", diagnostic["position_error"][-1],
+                          "rotation error (deg):", np.degrees(diagnostic["rotation_error_rad"][-1]))
             else:
                 reasons = []
             pos = group["states/objects/position"][:]

@@ -17,6 +17,34 @@ def numpy(value):
     return value.detach().cpu().numpy().copy()
 
 
+def diagnostic_pose_term(original):
+    """Wrap the configured termination term at its actual evaluation point."""
+    def evaluate(env, **kwargs):
+        result = original(env, **kwargs)
+        idx = torch.clamp(env.frame_idx, max=env.ref_len - 1)
+        objects = env.scene["objects"].data
+        position = objects.object_pos_w - env.scene.env_origins.unsqueeze(1)
+        reference = env.ref_object_pos[idx]
+        pos_error = torch.norm(position - reference, dim=-1)
+        dot = torch.clamp(torch.abs(torch.sum(
+            objects.object_quat_w * env.ref_object_quat[idx], dim=-1)), 0., 1.)
+        rot_error = 2. * torch.arccos(dot)
+        env._collection_pose_diagnostic = {
+            "reference_frame": numpy(idx[0]),
+            "object_position": numpy(position[0]),
+            "reference_position": numpy(reference[0]),
+            "position_error": numpy(pos_error[0]),
+            "rotation_error_rad": numpy(rot_error[0]),
+            "position_threshold": numpy(env.object_pos_threshold[0]),
+            "rotation_threshold_rad": numpy(env.object_rot_threshold[0]),
+            "position_exceeded": numpy(pos_error[0] > env.object_pos_threshold[0]),
+            "rotation_exceeded": numpy(rot_error[0] > env.object_rot_threshold[0]),
+            "pose_break": numpy(result[0]),
+        }
+        return result
+    return evaluate
+
+
 def policy_observation(obs, policy_module):
     """Use the policy's group selection/order, before its observation normalizer.
 
@@ -100,13 +128,32 @@ def write_episode(group, states, observations, transitions, completed):
             group.create_dataset(f"transitions/{key}", data=np.stack([t[key] for t in transitions]), compression="gzip")
 
 
-def collect(env, policy, policy_module, app, output, episodes, max_steps, physics, metadata):
+def collect(env, policy, policy_module, app, output, episodes, max_steps, physics, metadata,
+            video_folder=None):
     base = env.unwrapped
     path = Path(output).expanduser()
     path.parent.mkdir(parents=True, exist_ok=True)
     original_reset = base._reset_idx
     terminal = {}
     collecting = False
+    video_writer = None
+
+    def render_frame():
+        frame = base.render()
+        if not isinstance(frame, np.ndarray) or frame.ndim != 3:
+            raise RuntimeError("Collection video requires an RGB array render")
+        return frame.copy()
+
+    def start_video(number):
+        if video_folder is None:
+            return None
+        import imageio.v2 as imageio
+        directory = Path(video_folder)
+        directory.mkdir(parents=True, exist_ok=True)
+        writer = imageio.get_writer(str(directory / f"episode_{number:06d}.mp4"),
+                                    fps=round(1. / float(base.step_dt)), macro_block_size=1)
+        writer.append_data(render_frame())
+        return writer
 
     def capture_reset(ids):
         # ManagerBasedRLEnv calls this after physics/rewards/terminations and
@@ -118,6 +165,10 @@ def collect(env, policy, policy_module, app, output, episodes, max_steps, physic
             terminal["reasons"] = {
                 name: numpy(base.termination_manager.get_term(name)[0])
                 for name in base.termination_manager.active_terms}
+            if video_writer is not None:
+                # Render before reset writes new poses: the final video frame
+                # belongs to this episode, not the following attempt.
+                terminal["video_frame"] = render_frame()
         return original_reset(ids)
 
     base._reset_idx = capture_reset
@@ -145,19 +196,26 @@ def collect(env, policy, policy_module, app, output, episodes, max_steps, physic
             hf.attrs["policy_obs_groups_json"] = json.dumps(getattr(policy_module, "obs_groups", {}))
             hf.attrs["completed_episodes"] = 0
             hf.attrs["collection_complete"] = False
+            hf.attrs["pose_diagnostics_version"] = 1
+            hf.attrs["video_folder"] = "" if video_folder is None else str(video_folder)
             env.reset()
             policy_module.reset(torch.ones(1, device=base.device, dtype=torch.bool))
             obs = env.get_observations()
             states = [snapshot(base)]
             collecting = True
+            video_writer = start_video(completed)
             while app.is_running() and completed < episodes and steps < max_steps:
                 terminal.clear()
+                base._collection_pose_diagnostic = None
                 with torch.inference_mode():
                     observations.append(policy_observation(obs, policy_module))
                     action = policy(obs)
                     action_saved = numpy(action[0])
                     obs, reward, done, _ = env.step(action)
                 ended = bool(done[0])
+                diagnostic = base._collection_pose_diagnostic
+                if diagnostic is None:
+                    raise RuntimeError("Termination diagnostic hook did not run")
                 if ended and "state" not in terminal:
                     raise RuntimeError("Terminal reset hook did not fire; refusing to save misaligned data")
                 transition = {"policy_action": action_saved,
@@ -165,12 +223,15 @@ def collect(env, policy, policy_module, app, output, episodes, max_steps, physic
                               "reward": numpy(reward[0]), "done": np.asarray(ended)}
                 # Store actual processed joint targets before reset clears action buffers.
                 transition.update(terminal["targets"] if ended else targets(base))
+                transition.update({f"diagnostics/{key}": value for key, value in diagnostic.items()})
                 for name in base.termination_manager.active_terms:
                     transition[f"termination/{name}"] = (
                         terminal["reasons"][name] if ended else
                         numpy(base.termination_manager.get_term(name)[0]))
                 transitions.append(transition)
                 states.append(terminal["state"] if ended else snapshot(base))
+                if video_writer is not None:
+                    video_writer.append_data(terminal["video_frame"] if ended else render_frame())
                 policy_module.reset(done)
                 steps += 1
                 if ended:
@@ -178,10 +239,20 @@ def collect(env, policy, policy_module, app, output, episodes, max_steps, physic
                     write_episode(group, states, observations, transitions, True)
                     reasons = [k for k, v in terminal["reasons"].items() if bool(v)]
                     print(f"[collect] episode={completed} steps={len(transitions)} reasons={reasons}", flush=True)
+                    print(f"[diagnostic] frame={int(diagnostic['reference_frame'])} "
+                          f"pos_error_m={diagnostic['position_error'].tolist()} "
+                          f"pos_threshold_m={float(diagnostic['position_threshold'])} "
+                          f"rot_error_deg={np.degrees(diagnostic['rotation_error_rad']).tolist()} "
+                          f"rot_threshold_deg={float(np.degrees(diagnostic['rotation_threshold_rad']))}", flush=True)
+                    if video_writer is not None:
+                        video_writer.close()
+                        video_writer = None
                     completed += 1
                     hf.attrs["completed_episodes"] = completed
                     hf.flush()
                     states, observations, transitions = [snapshot(base)], [], []
+                    if completed < episodes and steps < max_steps:
+                        video_writer = start_video(completed)
             if transitions:
                 write_episode(hf.create_group("partial_episode"), states, observations, transitions, False)
             hf.attrs["completed_episodes"] = completed
@@ -190,6 +261,8 @@ def collect(env, policy, policy_module, app, output, episodes, max_steps, physic
             hf.attrs["collection_complete"] = completed == episodes
     finally:
         base._reset_idx = original_reset
+        if video_writer is not None:
+            video_writer.close()
     print(f"[collect] saved {completed}/{episodes} episodes to {path}", flush=True)
     if completed != episodes:
         raise RuntimeError("Collection stopped before requested episode count; partial data retained")

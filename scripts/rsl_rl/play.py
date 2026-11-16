@@ -132,8 +132,8 @@ def main(
     if args_cli.collect_trajectories:
         if "Rby1a-Sharpa" not in args_cli.task or env_cfg.scene.num_envs != 1:
             raise ValueError("Trajectory collection requires Rby1a-Sharpa and --num_envs 1")
-        if args_cli.export_rollout or args_cli.video:
-            raise ValueError("Use collection without --export_rollout/--video for the initial data validation")
+        if args_cli.export_rollout:
+            raise ValueError("Use collection without --export_rollout")
         if args_cli.episodes <= 0 or args_cli.collection_max_steps <= 0:
             raise ValueError("Episode and step limits must be positive")
         from ConTrack.tasks.manager_based.mimic_rby1a_sharpa import mdp as sharpa_mdp
@@ -141,6 +141,8 @@ def main(
         # initial-state distribution or failure criterion between episodes.
         env_cfg.events.reset_to_demo.func = sharpa_mdp.reset_reference_episode_first_frame
         env_cfg.threshold_curriculum_enabled = False
+        from scripts.tools.trajectory_collection import diagnostic_pose_term
+        env_cfg.terminations.pose_break.func = diagnostic_pose_term(env_cfg.terminations.pose_break.func)
 
     env = gym.make(args_cli.task, cfg=env_cfg, render_mode="rgb_array" if args_cli.video else None)
     if isinstance(env.unwrapped, DirectMARLEnv):
@@ -176,7 +178,7 @@ def main(
         env.unwrapped.force_start_frame0 = True
         env.reset()
 
-    if args_cli.video:
+    if args_cli.video and not args_cli.collect_trajectories:
         env = gym.wrappers.RecordVideo(
             env,
             video_folder=args_cli.video_folder or os.path.join(log_dir, "videos", "train"),
@@ -203,7 +205,10 @@ def main(
                     args_cli.collection_max_steps, physics_report,
                     {"checkpoint": str(Path(resume_path).resolve()),
                      "reference_path": str(env_cfg.reference_path),
-                     "seed": int(cfg["seed"]), "task": args_cli.task})
+                     "seed": int(cfg["seed"]), "task": args_cli.task},
+                    video_folder=(args_cli.video_folder or
+                                  str(Path(args_cli.collect_trajectories).parent / "videos"))
+                    if args_cli.video else None)
         finally:
             env.close()
         return
