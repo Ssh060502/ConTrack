@@ -3,7 +3,7 @@
 set -euo pipefail
 
 usage() {
-    echo 'Usage: bash scripts/collect_mug.sh [--video] [--episodes COUNT] [--gpu INDEX] [--mass-scale NUMBER] [--friction NUMBER]'
+    echo 'Usage: bash scripts/collect_mug.sh [--pose-break-mode strict|log-only] [--video] [--episodes COUNT] [--gpu INDEX] [--mass-scale NUMBER] [--friction NUMBER]'
     echo 'Defaults: GPU 0; mass scale 1.0; friction retains original material inheritance.'
 }
 MASS_SCALE="1.0"
@@ -11,10 +11,11 @@ FRICTION=""
 GPU="0"
 EPISODES="10"
 VIDEO_ARGS=()
+POSE_BREAK_MODE="strict"
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --video) VIDEO_ARGS=(--video); shift ;;
-        --mass-scale|--friction|--gpu|--episodes)
+        --mass-scale|--friction|--gpu|--episodes|--pose-break-mode)
             if [[ $# -lt 2 || "$2" == --* || -z "$2" ]]; then
                 printf 'Missing value for %s\n' "$1" >&2
                 exit 2
@@ -24,12 +25,18 @@ while [[ $# -gt 0 ]]; do
                 --friction) FRICTION="$2" ;;
                 --gpu) GPU="$2" ;;
                 --episodes) EPISODES="$2" ;;
+                --pose-break-mode) POSE_BREAK_MODE="$2" ;;
             esac
             shift 2 ;;
         -h|--help) usage; exit 0 ;;
         *) printf 'Unknown argument: %s\n' "$1" >&2; usage >&2; exit 2 ;;
     esac
 done
+
+if [[ "$POSE_BREAK_MODE" != strict && "$POSE_BREAK_MODE" != log-only ]]; then
+    printf 'Invalid --pose-break-mode: use strict or log-only\n' >&2
+    exit 2
+fi
 
 if [[ ! "$GPU" =~ ^(0|[1-9][0-9]*)$ ]]; then
     printf 'Invalid --gpu: expected a nonnegative integer, got %s\n' "$GPU" >&2
@@ -76,7 +83,7 @@ done
 
 # A fresh output directory for each run, including runs started in the same second.
 mkdir -p outputs/physics_validation
-OUTPUT_DIR="$(mktemp -d "$REPO_ROOT/outputs/physics_validation/mug_collect_mass${MASS_SCALE}_friction${FRICTION_TAG}_$(date +%Y%m%d_%H%M%S)_XXXXXX")"
+OUTPUT_DIR="$(mktemp -d "$REPO_ROOT/outputs/physics_validation/mug_collect_${POSE_BREAK_MODE}_mass${MASS_SCALE}_friction${FRICTION_TAG}_$(date +%Y%m%d_%H%M%S)_XXXXXX")"
 
 # Keep the original mass and material inheritance even if overrides were exported
 # in the calling terminal. This script changes only its own process environment.
@@ -101,6 +108,7 @@ python -u scripts/rsl_rl/play.py \
     --headless \
     "${VIDEO_ARGS[@]}" \
     --episodes "$EPISODES" \
+    --pose_break_mode "$POSE_BREAK_MODE" \
     --collection_max_steps 100000 \
     --collect_trajectories "$OUTPUT_DIR/episodes.h5" \
     2>&1 | tee -a "$OUTPUT_DIR/run.log"

@@ -17,13 +17,16 @@ def numpy(value):
     return value.detach().cpu().numpy().copy()
 
 
-def diagnostic_pose_term(original):
+def diagnostic_pose_term(original, mode="strict"):
     """Wrap the configured termination term at its actual evaluation point."""
+    if mode not in ("strict", "log-only"):
+        raise ValueError(f"Unknown pose break mode: {mode}")
     # Isaac Lab validates the signature literally; a **kwargs parameter is
     # interpreted as an unconfigured required term parameter in this version.
     # The Sharpa obj_pose_exceeded term takes only env.
     def evaluate(env):
         result = original(env)
+        active_result = result if mode == "strict" else torch.zeros_like(result)
         idx = torch.clamp(env.frame_idx, max=env.ref_len - 1)
         objects = env.scene["objects"].data
         position = objects.object_pos_w - env.scene.env_origins.unsqueeze(1)
@@ -42,9 +45,10 @@ def diagnostic_pose_term(original):
             "rotation_threshold_rad": numpy(env.object_rot_threshold[0]),
             "position_exceeded": numpy(pos_error[0] > env.object_pos_threshold[0]),
             "rotation_exceeded": numpy(rot_error[0] > env.object_rot_threshold[0]),
-            "pose_break": numpy(result[0]),
+            "threshold_exceeded": numpy(result[0]),
+            "pose_break": numpy(active_result[0]),
         }
-        return result
+        return active_result
     return evaluate
 
 
@@ -200,6 +204,7 @@ def collect(env, policy, policy_module, app, output, episodes, max_steps, physic
             hf.attrs["completed_episodes"] = 0
             hf.attrs["collection_complete"] = False
             hf.attrs["pose_diagnostics_version"] = 1
+            hf.attrs["pose_break_mode"] = metadata.get("pose_break_mode", "strict")
             hf.attrs["video_folder"] = "" if video_folder is None else str(video_folder)
             env.reset()
             policy_module.reset(torch.ones(1, device=base.device, dtype=torch.bool))

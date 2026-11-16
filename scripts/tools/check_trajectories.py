@@ -10,6 +10,8 @@ def check(path):
             raise ValueError("Not a ConTrack episode collection")
         print("Collection complete:", bool(hf.attrs["collection_complete"]))
         print("Completed episodes:", int(hf.attrs["completed_episodes"]))
+        mode = hf.attrs.get("pose_break_mode", "strict")
+        print("Pose break mode:", mode)
         groups = list(hf.get("episodes", {}).items())
         if "partial_episode" in hf:
             groups.append(("partial_episode", hf["partial_episode"]))
@@ -37,9 +39,13 @@ def check(path):
                     position_hit = diagnostic["position_error"][:] > diagnostic["position_threshold"][:][:, None]
                     rotation_hit = diagnostic["rotation_error_rad"][:] > diagnostic["rotation_threshold_rad"][:][:, None]
                     expected = np.any(position_hit | rotation_hit, axis=-1)
-                    if not np.array_equal(expected, diagnostic["pose_break"][:]):
+                    threshold_flag = diagnostic["threshold_exceeded"][:] if "threshold_exceeded" in diagnostic else diagnostic["pose_break"][:]
+                    if not np.array_equal(expected, threshold_flag):
                         raise ValueError("Pose diagnostic differs from termination evaluation")
-                    if not np.array_equal(expected, group["transitions/termination/pose_break"][:]):
+                    active_expected = expected if mode == "strict" else np.zeros_like(expected)
+                    if not np.array_equal(active_expected, diagnostic["pose_break"][:]):
+                        raise ValueError("Pose mode differs from active termination diagnostic")
+                    if not np.array_equal(active_expected, group["transitions/termination/pose_break"][:]):
                         raise ValueError("Recorded termination flag differs from diagnostic")
                     print("  termination frame:", diagnostic["reference_frame"][-1],
                           "position error:", diagnostic["position_error"][-1],

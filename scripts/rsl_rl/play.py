@@ -50,6 +50,8 @@ parser.add_argument("--seed", type=int, default=None)
 parser.add_argument("--collect_trajectories", type=str, default=None, help="Episode H5 output (single Sharpa env).")
 parser.add_argument("--episodes", type=int, default=10)
 parser.add_argument("--collection_max_steps", type=int, default=100000)
+parser.add_argument("--pose_break_mode", choices=("strict", "log-only"), default="strict",
+                    help="Collection only: log-only records pose deviations without terminating on them.")
 cli_args.add_rsl_rl_args(parser)
 AppLauncher.add_app_launcher_args(parser)
 args_cli, hydra_args = parser.parse_known_args()
@@ -142,7 +144,8 @@ def main(
         env_cfg.events.reset_to_demo.func = sharpa_mdp.reset_reference_episode_first_frame
         env_cfg.threshold_curriculum_enabled = False
         from scripts.tools.trajectory_collection import diagnostic_pose_term
-        env_cfg.terminations.pose_break.func = diagnostic_pose_term(env_cfg.terminations.pose_break.func)
+        env_cfg.terminations.pose_break.func = diagnostic_pose_term(
+            env_cfg.terminations.pose_break.func, args_cli.pose_break_mode)
 
     env = gym.make(args_cli.task, cfg=env_cfg, render_mode="rgb_array" if args_cli.video else None)
     if isinstance(env.unwrapped, DirectMARLEnv):
@@ -205,7 +208,8 @@ def main(
                     args_cli.collection_max_steps, physics_report,
                     {"checkpoint": str(Path(resume_path).resolve()),
                      "reference_path": str(env_cfg.reference_path),
-                     "seed": int(cfg["seed"]), "task": args_cli.task},
+                     "seed": int(cfg["seed"]), "task": args_cli.task,
+                     "pose_break_mode": args_cli.pose_break_mode},
                     video_folder=(args_cli.video_folder or
                                   str(Path(args_cli.collect_trajectories).parent / "videos"))
                     if args_cli.video else None)
