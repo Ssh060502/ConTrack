@@ -34,8 +34,8 @@ def check(path):
                 reasons = [k for k, v in group["transitions/termination"].items() if bool(v[-1])]
                 if "diagnostics" in group["transitions"]:
                     diagnostic = group["transitions/diagnostics"]
-                    position_hit = diagnostic["position_error"][:] > diagnostic["position_threshold"][: , None]
-                    rotation_hit = diagnostic["rotation_error_rad"][:] > diagnostic["rotation_threshold_rad"][:, None]
+                    position_hit = diagnostic["position_error"][:] > diagnostic["position_threshold"][:][:, None]
+                    rotation_hit = diagnostic["rotation_error_rad"][:] > diagnostic["rotation_threshold_rad"][:][:, None]
                     expected = np.any(position_hit | rotation_hit, axis=-1)
                     if not np.array_equal(expected, diagnostic["pose_break"][:]):
                         raise ValueError("Pose diagnostic differs from termination evaluation")
