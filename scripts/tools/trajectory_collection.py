@@ -17,6 +17,26 @@ def numpy(value):
     return value.detach().cpu().numpy().copy()
 
 
+def policy_observation(obs, policy_module):
+    """Use the policy's group selection/order, before its observation normalizer.
+
+    RSL-RL returns a TensorDict, not a flat tensor. Indexing obs[0] selects
+    a TensorDict batch entry and its numpy() yields an object array.
+    """
+    if hasattr(policy_module, "get_actor_obs"):
+        value = policy_module.get_actor_obs(obs)
+    elif hasattr(policy_module, "get_student_obs"):
+        value = policy_module.get_student_obs(obs)
+    elif hasattr(obs, "keys"):
+        raise TypeError("Observation mapping requires a policy observation accessor")
+    else:
+        value = obs
+    array = numpy(value)
+    if array.dtype.kind not in "fiu" or array.ndim != 2 or array.shape[0] != 1:
+        raise TypeError(f"Expected numeric actor observation (1, D), got {array.shape}, {array.dtype}")
+    return array[0].copy()
+
+
 def snapshot(env):
     result = {}
     for name, ids, h in env.ref_hands:
@@ -56,6 +76,9 @@ def write_episode(group, states, observations, transitions, completed):
     count = len(transitions)
     if len(states) != count + 1 or len(observations) != count:
         raise ValueError("Episode state/action alignment is invalid")
+    observation_array = np.stack(observations) if count else None
+    if count and (observation_array.dtype.kind not in "fiu" or observation_array.ndim != 2):
+        raise TypeError("Policy observations must be a numeric (T, D) array")
     group.attrs["completed"] = completed
     group.attrs["transition_count"] = count
     for key in states[0]:
@@ -71,7 +94,8 @@ def write_episode(group, states, observations, transitions, completed):
     group.create_dataset("metrics/object_rotation_error_rad", data=2 * np.arccos(
         np.clip(np.abs(np.sum(q * qr, axis=-1)), 0, 1)))
     if count:
-        group.create_dataset("policy_observation", data=np.stack(observations), compression="gzip")
+        dataset = group.create_dataset("policy_observation", data=observation_array, compression="gzip")
+        dataset.attrs["representation"] = "policy-selected concatenated groups, before observation normalization"
         for key in transitions[0]:
             group.create_dataset(f"transitions/{key}", data=np.stack([t[key] for t in transitions]), compression="gzip")
 
@@ -118,6 +142,9 @@ def collect(env, policy, policy_module, app, output, episodes, max_steps, physic
                  "joint_names": [base.scene[name].joint_names[int(j)] for j in ids]}
                 for name, ids, h in base.ref_hands])
             hf.attrs["contact_mapping_json"] = json.dumps(base.hand_contact_sensor_keys)
+            hf.attrs["policy_obs_groups_json"] = json.dumps(getattr(policy_module, "obs_groups", {}))
+            hf.attrs["completed_episodes"] = 0
+            hf.attrs["collection_complete"] = False
             env.reset()
             policy_module.reset(torch.ones(1, device=base.device, dtype=torch.bool))
             obs = env.get_observations()
@@ -125,8 +152,8 @@ def collect(env, policy, policy_module, app, output, episodes, max_steps, physic
             collecting = True
             while app.is_running() and completed < episodes and steps < max_steps:
                 terminal.clear()
-                observations.append(numpy(obs[0]))
                 with torch.inference_mode():
+                    observations.append(policy_observation(obs, policy_module))
                     action = policy(obs)
                     action_saved = numpy(action[0])
                     obs, reward, done, _ = env.step(action)

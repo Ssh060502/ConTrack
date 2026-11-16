@@ -25,7 +25,8 @@ def check(path):
             group["states"].visititems(aligned(t + 1))
             if t:
                 group["transitions"].visititems(aligned(t))
-                if group["policy_observation"].shape[0] != t:
+                observation = group["policy_observation"]
+                if observation.shape[0] != t or observation.ndim != 2 or observation.dtype.kind not in "fiu":
                     raise ValueError("Observation/action alignment mismatch")
                 done = group["transitions/done"][:].astype(bool)
                 if done[:-1].any() or bool(done[-1]) != bool(group.attrs["completed"]):
