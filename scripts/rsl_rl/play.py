@@ -47,6 +47,9 @@ parser.add_argument(
 )
 parser.add_argument("--agent", type=str, default="rsl_rl_cfg_entry_point")
 parser.add_argument("--seed", type=int, default=None)
+parser.add_argument("--collect_trajectories", type=str, default=None, help="Episode H5 output (single Sharpa env).")
+parser.add_argument("--episodes", type=int, default=10)
+parser.add_argument("--collection_max_steps", type=int, default=100000)
 cli_args.add_rsl_rl_args(parser)
 AppLauncher.add_app_launcher_args(parser)
 args_cli, hydra_args = parser.parse_known_args()
@@ -126,6 +129,19 @@ def main(
     env_cfg.scene.num_envs = args_cli.num_envs if args_cli.num_envs is not None else env_cfg.scene.num_envs
     env_cfg.log_dir = log_dir
 
+    if args_cli.collect_trajectories:
+        if "Rby1a-Sharpa" not in args_cli.task or env_cfg.scene.num_envs != 1:
+            raise ValueError("Trajectory collection requires Rby1a-Sharpa and --num_envs 1")
+        if args_cli.export_rollout or args_cli.video:
+            raise ValueError("Use collection without --export_rollout/--video for the initial data validation")
+        if args_cli.episodes <= 0 or args_cli.collection_max_steps <= 0:
+            raise ValueError("Episode and step limits must be positive")
+        from ConTrack.tasks.manager_based.mimic_rby1a_sharpa import mdp as sharpa_mdp
+        # Avoid the training reset library and threshold curriculum changing the
+        # initial-state distribution or failure criterion between episodes.
+        env_cfg.events.reset_to_demo.func = sharpa_mdp.reset_reference_episode_first_frame
+        env_cfg.threshold_curriculum_enabled = False
+
     env = gym.make(args_cli.task, cfg=env_cfg, render_mode="rgb_array" if args_cli.video else None)
     if isinstance(env.unwrapped, DirectMARLEnv):
         env = multi_agent_to_single_agent(env)
@@ -179,6 +195,18 @@ def main(
     )
     runner.load(resume_path)
     policy = runner.get_inference_policy(device=env.unwrapped.device)
+    if args_cli.collect_trajectories:
+        from scripts.tools.trajectory_collection import collect
+        try:
+            collect(env, policy, runner.alg.policy, simulation_app,
+                    args_cli.collect_trajectories, args_cli.episodes,
+                    args_cli.collection_max_steps, physics_report,
+                    {"checkpoint": str(Path(resume_path).resolve()),
+                     "reference_path": str(env_cfg.reference_path),
+                     "seed": int(cfg["seed"]), "task": args_cli.task})
+        finally:
+            env.close()
+        return
     obs = env.get_observations()
     timestep = 0
     episode_logs: dict[str, list[float]] = {}
