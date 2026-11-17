@@ -3,7 +3,7 @@
 set -euo pipefail
 
 usage() {
-    echo 'Usage: bash scripts/collect_mug.sh [--trace-reset] [--pose-break-mode strict|log-only] [--video] [--episodes COUNT] [--gpu INDEX] [--mass-scale NUMBER] [--friction NUMBER]'
+    echo 'Usage: bash scripts/collect_mug.sh [--diagnostic-no-self-collisions] [--trace-reset] [--pose-break-mode strict|log-only] [--video] [--episodes COUNT] [--gpu INDEX] [--mass-scale NUMBER] [--friction NUMBER]'
     echo 'Defaults: GPU 0; mass scale 1.0; friction retains original material inheritance.'
 }
 MASS_SCALE="1.0"
@@ -12,9 +12,12 @@ GPU="0"
 EPISODES="10"
 VIDEO_ARGS=()
 TRACE_ARGS=()
+COLLISION_ARGS=()
+COLLISION_TAG=""
 POSE_BREAK_MODE="strict"
 while [[ $# -gt 0 ]]; do
     case "$1" in
+        --diagnostic-no-self-collisions) COLLISION_ARGS=(--diagnostic_no_self_collisions); COLLISION_TAG="_noself_DIAGNOSTIC"; shift ;;
         --trace-reset) TRACE_ARGS=(--trace_reset); shift ;;
         --video) VIDEO_ARGS=(--video); shift ;;
         --mass-scale|--friction|--gpu|--episodes|--pose-break-mode)
@@ -85,7 +88,7 @@ done
 
 # A fresh output directory for each run, including runs started in the same second.
 mkdir -p outputs/physics_validation
-OUTPUT_DIR="$(mktemp -d "$REPO_ROOT/outputs/physics_validation/mug_collect_${POSE_BREAK_MODE}_mass${MASS_SCALE}_friction${FRICTION_TAG}_$(date +%Y%m%d_%H%M%S)_XXXXXX")"
+OUTPUT_DIR="$(mktemp -d "$REPO_ROOT/outputs/physics_validation/mug_collect_${POSE_BREAK_MODE}_mass${MASS_SCALE}_friction${FRICTION_TAG}${COLLISION_TAG}_$(date +%Y%m%d_%H%M%S)_XXXXXX")"
 
 # Keep the original mass and material inheritance even if overrides were exported
 # in the calling terminal. This script changes only its own process environment.
@@ -110,6 +113,7 @@ python -u scripts/rsl_rl/play.py \
     --headless \
     "${VIDEO_ARGS[@]}" \
     "${TRACE_ARGS[@]}" \
+    "${COLLISION_ARGS[@]}" \
     --episodes "$EPISODES" \
     --pose_break_mode "$POSE_BREAK_MODE" \
     --collection_max_steps 100000 \

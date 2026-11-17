@@ -51,6 +51,8 @@ parser.add_argument("--collect_trajectories", type=str, default=None, help="Epis
 parser.add_argument("--episodes", type=int, default=10)
 parser.add_argument("--collection_max_steps", type=int, default=100000)
 parser.add_argument("--trace_reset", action="store_true", help="Collection: trace full reset state and first-control physics substeps.")
+parser.add_argument("--diagnostic_no_self_collisions", action="store_true",
+                    help="Collection-only diagnostic: disable robot self collisions, not hand-object collisions.")
 parser.add_argument("--pose_break_mode", choices=("strict", "log-only"), default="strict",
                     help="Collection only: log-only records pose deviations without terminating on them.")
 cli_args.add_rsl_rl_args(parser)
@@ -131,6 +133,8 @@ def main(
     env_cfg.sim.device = args_cli.device if args_cli.device is not None else env_cfg.sim.device
     env_cfg.scene.num_envs = args_cli.num_envs if args_cli.num_envs is not None else env_cfg.scene.num_envs
     env_cfg.log_dir = log_dir
+    if args_cli.diagnostic_no_self_collisions and not args_cli.collect_trajectories:
+        raise ValueError("Self-collision diagnostic requires --collect_trajectories")
 
     if args_cli.collect_trajectories:
         if "Rby1a-Sharpa" not in args_cli.task or env_cfg.scene.num_envs != 1:
@@ -147,6 +151,9 @@ def main(
         from scripts.tools.trajectory_collection import diagnostic_pose_term
         env_cfg.terminations.pose_break.func = diagnostic_pose_term(
             env_cfg.terminations.pose_break.func, args_cli.pose_break_mode)
+        if args_cli.diagnostic_no_self_collisions:
+            env_cfg.scene.rby1a_sharpa.spawn.articulation_props.enabled_self_collisions = False
+            print("[DIAGNOSTIC ONLY] Robot self collisions disabled; do not pool this run with normal training data.")
 
     env = gym.make(args_cli.task, cfg=env_cfg, render_mode="rgb_array" if args_cli.video else None)
     if isinstance(env.unwrapped, DirectMARLEnv):
@@ -210,7 +217,9 @@ def main(
                     {"checkpoint": str(Path(resume_path).resolve()),
                      "reference_path": str(env_cfg.reference_path),
                      "seed": int(cfg["seed"]), "task": args_cli.task,
-                     "pose_break_mode": args_cli.pose_break_mode},
+                     "pose_break_mode": args_cli.pose_break_mode,
+                     "robot_self_collisions": bool(env_cfg.scene.rby1a_sharpa.spawn.articulation_props.enabled_self_collisions),
+                     "diagnostic_no_self_collisions": args_cli.diagnostic_no_self_collisions},
                     video_folder=(args_cli.video_folder or
                                   str(Path(args_cli.collect_trajectories).parent / "videos"))
                     if args_cli.video else None, trace_reset=args_cli.trace_reset)
