@@ -59,7 +59,8 @@ class ResetTrace:
                 self._optional(result, f"{prefix}/buffered/{attribute}", data, attribute)
             view = robot.root_physx_view
             # Required fresh values: fail visibly if the server API differs.
-            for getter in ("get_dof_positions", "get_dof_velocities"):
+            for getter in ("get_dof_positions", "get_dof_velocities",
+                           "get_link_transforms", "get_link_velocities"):
                 result[f"{prefix}/physx/{getter}"] = array(getattr(view, getter)())
             for getter in ("get_root_transforms", "get_root_velocities", "get_dof_position_targets",
                            "get_dof_velocity_targets", "get_dof_actuation_forces"):
@@ -117,6 +118,10 @@ class ResetTrace:
         group.attrs["decimation"] = int(self.env.cfg.decimation)
         group.attrs["unavailable_fields_json"] = json.dumps(self.unavailable)
         group.attrs["joint_names_json"] = json.dumps({k: list(v.joint_names) for k, v in self.robots.items()})
+        group.attrs["link_names_json"] = json.dumps({k: list(v.body_names) for k, v in self.robots.items()})
+        group.attrs["trace_version"] = 2
+        group.attrs["link_transform_semantics"] = "PhysX native (x,y,z,qx,qy,qz,qw); frame follows simulation subspace; no kinematic refresh is forced"
+        group.attrs["link_velocity_semantics"] = "PhysX world linear velocity at link COM followed by angular velocity"
         group.attrs["buffer_semantics"] = "buffered fields may be stale between sim.step and scene.update; use physx for fresh values"
         group.attrs["raw_transform_semantics"] = "native PhysX tensor API layout and world coordinates, no quaternion conversion"
         for phase in ("reset_before", "reset_after", "before_policy", "after_policy_before_step", "first_control_end"):

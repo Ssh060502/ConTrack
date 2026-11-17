@@ -33,6 +33,37 @@ def differences(baseline, values):
     return rows
 
 
+def link_differences(baseline, values, names):
+    """Describe direct-readback links; quaternion sign alone is not a rotation."""
+    rows = []
+    for robot, links in names.items():
+        prefix = f"robots/{robot}/physx/"
+        key = prefix + "get_link_transforms"
+        velocity_key = prefix + "get_link_velocities"
+        if key not in baseline or key not in values:
+            continue
+        a, b = np.asarray(baseline[key]), np.asarray(values[key])
+        if a.shape != b.shape or a.ndim != 3 or a.shape[0] != 1 or a.shape[1] != len(links):
+            raise ValueError(f"Link mapping/shape mismatch for {robot}: {a.shape}, {b.shape}, {len(links)} names")
+        for index, name in enumerate(links):
+            before, after = a[0, index], b[0, index]
+            linear = angular = 0.
+            if velocity_key in baseline and velocity_key in values:
+                dv = np.asarray(values[velocity_key])[0, index] - np.asarray(baseline[velocity_key])[0, index]
+                linear, angular = float(np.linalg.norm(dv[:3])), float(np.linalg.norm(dv[3:]))
+            if np.array_equal(before, after, equal_nan=True) and linear == 0 and angular == 0:
+                continue
+            qa, qb = before[3:7], after[3:7]
+            denominator = float(np.linalg.norm(qa) * np.linalg.norm(qb))
+            angle = float(2 * np.arccos(np.clip(abs(np.dot(qa, qb)) / denominator, 0, 1))) if denominator > 0 else None
+            rows.append({"robot": robot, "link": name,
+                         "position_difference_m": float(np.linalg.norm(before[:3]-after[:3])),
+                         "rotation_difference_rad": angle,
+                         "linear_velocity_difference_m_s": linear,
+                         "angular_velocity_difference_rad_s": angular})
+    return rows
+
+
 def compare(paths):
     baseline = None
     reports = []
@@ -58,7 +89,11 @@ def compare(paths):
                 if baseline is None:
                     baseline = values
                 result = {phase: differences(baseline.get(phase, {}), values[phase]) for phase in phases}
+                names = json.loads(trace.attrs.get("link_names_json", "{}"))
+                link_result = {phase: link_differences(baseline.get(phase, {}), values[phase], names) for phase in phases}
                 report = {"file": str(path.resolve()), "episode": episode, "differences": result,
+                          "trace_version": int(trace.attrs.get("trace_version", 1)),
+                          "link_differences": link_result,
                           "unavailable_fields": json.loads(trace.attrs.get("unavailable_fields_json", "{}"))}
                 reports.append(report)
                 print(f"\n{path} episode={episode}")
@@ -66,6 +101,11 @@ def compare(paths):
                     print(f"  {phase}: {len(rows)} differing fields")
                     for row in rows[:8]:
                         print("   ", row)
+                    changed_links = link_result[phase]
+                    if changed_links:
+                        print(f"    Direct PhysX link differences: {len(changed_links)} links")
+                        for link in changed_links[:8]:
+                            print("     ", link)
                 if report["unavailable_fields"]:
                     print("  Unavailable optional fields:", list(report["unavailable_fields"]))
     return reports
