@@ -19,5 +19,13 @@ done
 mkdir -p logs/oracle_adapter
 LOG="$(mktemp "$REPO_ROOT/logs/oracle_adapter/launcher_$(date +%Y%m%d_%H%M%S)_XXXXXX.log")"
 printf 'GPU: %s\nLauncher log: %s\n' "$GPU" "$LOG"
-CUDA_VISIBLE_DEVICES="$GPU" python -u scripts/rsl_rl/oracle_adapter.py \
+set +e
+CUDA_VISIBLE_DEVICES="$GPU" python -X faulthandler -u scripts/rsl_rl/oracle_adapter.py \
     --device cuda:0 --headless "${ARGS[@]}" 2>&1 | tee "$LOG"
+STATUS=("${PIPESTATUS[@]}")
+set -e
+printf '[launcher] Python exit code: %s; tee exit code: %s\n' "${STATUS[0]}" "${STATUS[1]}" | tee -a "$LOG"
+if [[ "${STATUS[0]}" -ne 0 ]]; then
+    exit "${STATUS[0]}"
+fi
+exit "${STATUS[1]}"
