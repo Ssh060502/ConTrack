@@ -136,7 +136,7 @@ def write_episode(group, states, observations, transitions, completed):
 
 
 def collect(env, policy, policy_module, app, output, episodes, max_steps, physics, metadata,
-            video_folder=None):
+            video_folder=None, trace_reset=False):
     base = env.unwrapped
     path = Path(output).expanduser()
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -144,6 +144,10 @@ def collect(env, policy, policy_module, app, output, episodes, max_steps, physic
     terminal = {}
     collecting = False
     video_writer = None
+    trace = None
+    if trace_reset:
+        from scripts.tools.reset_trace import ResetTrace
+        trace = ResetTrace(base)
 
     def render_frame():
         frame = base.render()
@@ -176,6 +180,11 @@ def collect(env, policy, policy_module, app, output, episodes, max_steps, physic
                 # Render before reset writes new poses: the final video frame
                 # belongs to this episode, not the following attempt.
                 terminal["video_frame"] = render_frame()
+        if trace is not None and len(ids):
+            trace.reset_before()
+            value = original_reset(ids)
+            trace.reset_after()
+            return value
         return original_reset(ids)
 
     base._reset_idx = capture_reset
@@ -183,6 +192,8 @@ def collect(env, policy, policy_module, app, output, episodes, max_steps, physic
     steps = 0
     states, observations, transitions = [], [], []
     try:
+        if trace is not None:
+            trace.install()
         # Exclusive create: an existing dataset is never silently overwritten.
         with h5py.File(path, "x") as hf:
             hf.attrs["schema_version"] = "contrack_episode_v1"
@@ -206,6 +217,7 @@ def collect(env, policy, policy_module, app, output, episodes, max_steps, physic
             hf.attrs["pose_diagnostics_version"] = 1
             hf.attrs["pose_break_mode"] = metadata.get("pose_break_mode", "strict")
             hf.attrs["video_folder"] = "" if video_folder is None else str(video_folder)
+            hf.attrs["reset_trace_enabled"] = trace is not None
             env.reset()
             policy_module.reset(torch.ones(1, device=base.device, dtype=torch.bool))
             obs = env.get_observations()
@@ -215,11 +227,19 @@ def collect(env, policy, policy_module, app, output, episodes, max_steps, physic
             while app.is_running() and completed < episodes and steps < max_steps:
                 terminal.clear()
                 base._collection_pose_diagnostic = None
+                if trace is not None:
+                    trace.before_policy(completed)
                 with torch.inference_mode():
                     observations.append(policy_observation(obs, policy_module))
                     action = policy(obs)
                     action_saved = numpy(action[0])
-                    obs, reward, done, _ = env.step(action)
+                    if trace is not None:
+                        trace.begin_control(completed)
+                    try:
+                        obs, reward, done, _ = env.step(action)
+                    finally:
+                        if trace is not None:
+                            trace.end_control()
                 ended = bool(done[0])
                 diagnostic = base._collection_pose_diagnostic
                 if diagnostic is None:
@@ -245,6 +265,8 @@ def collect(env, policy, policy_module, app, output, episodes, max_steps, physic
                 if ended:
                     group = hf.create_group(f"episodes/{completed:06d}")
                     write_episode(group, states, observations, transitions, True)
+                    if trace is not None:
+                        trace.write(group.create_group("reset_trace"), completed)
                     reasons = [k for k, v in terminal["reasons"].items() if bool(v)]
                     print(f"[collect] episode={completed} steps={len(transitions)} reasons={reasons}", flush=True)
                     print(f"[diagnostic] frame={int(diagnostic['reference_frame'])} "
@@ -262,13 +284,18 @@ def collect(env, policy, policy_module, app, output, episodes, max_steps, physic
                     if completed < episodes and steps < max_steps:
                         video_writer = start_video(completed)
             if transitions:
-                write_episode(hf.create_group("partial_episode"), states, observations, transitions, False)
+                group = hf.create_group("partial_episode")
+                write_episode(group, states, observations, transitions, False)
+                if trace is not None:
+                    trace.write(group.create_group("reset_trace"), completed)
             hf.attrs["completed_episodes"] = completed
             hf.attrs["total_steps"] = steps
             hf.attrs["requested_episodes"] = episodes
             hf.attrs["collection_complete"] = completed == episodes
     finally:
         base._reset_idx = original_reset
+        if trace is not None:
+            trace.restore()
         if video_writer is not None:
             video_writer.close()
     print(f"[collect] saved {completed}/{episodes} episodes to {path}", flush=True)

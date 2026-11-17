@@ -50,6 +50,7 @@ parser.add_argument("--seed", type=int, default=None)
 parser.add_argument("--collect_trajectories", type=str, default=None, help="Episode H5 output (single Sharpa env).")
 parser.add_argument("--episodes", type=int, default=10)
 parser.add_argument("--collection_max_steps", type=int, default=100000)
+parser.add_argument("--trace_reset", action="store_true", help="Collection: trace full reset state and first-control physics substeps.")
 parser.add_argument("--pose_break_mode", choices=("strict", "log-only"), default="strict",
                     help="Collection only: log-only records pose deviations without terminating on them.")
 cli_args.add_rsl_rl_args(parser)
@@ -212,7 +213,7 @@ def main(
                      "pose_break_mode": args_cli.pose_break_mode},
                     video_folder=(args_cli.video_folder or
                                   str(Path(args_cli.collect_trajectories).parent / "videos"))
-                    if args_cli.video else None)
+                    if args_cli.video else None, trace_reset=args_cli.trace_reset)
         finally:
             env.close()
         return

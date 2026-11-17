@@ -3,7 +3,7 @@
 set -euo pipefail
 
 usage() {
-    echo 'Usage: bash scripts/collect_mug.sh [--pose-break-mode strict|log-only] [--video] [--episodes COUNT] [--gpu INDEX] [--mass-scale NUMBER] [--friction NUMBER]'
+    echo 'Usage: bash scripts/collect_mug.sh [--trace-reset] [--pose-break-mode strict|log-only] [--video] [--episodes COUNT] [--gpu INDEX] [--mass-scale NUMBER] [--friction NUMBER]'
     echo 'Defaults: GPU 0; mass scale 1.0; friction retains original material inheritance.'
 }
 MASS_SCALE="1.0"
@@ -11,9 +11,11 @@ FRICTION=""
 GPU="0"
 EPISODES="10"
 VIDEO_ARGS=()
+TRACE_ARGS=()
 POSE_BREAK_MODE="strict"
 while [[ $# -gt 0 ]]; do
     case "$1" in
+        --trace-reset) TRACE_ARGS=(--trace_reset); shift ;;
         --video) VIDEO_ARGS=(--video); shift ;;
         --mass-scale|--friction|--gpu|--episodes|--pose-break-mode)
             if [[ $# -lt 2 || "$2" == --* || -z "$2" ]]; then
@@ -107,6 +109,7 @@ python -u scripts/rsl_rl/play.py \
     --seed 42 \
     --headless \
     "${VIDEO_ARGS[@]}" \
+    "${TRACE_ARGS[@]}" \
     --episodes "$EPISODES" \
     --pose_break_mode "$POSE_BREAK_MODE" \
     --collection_max_steps 100000 \
