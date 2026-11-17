@@ -28,4 +28,8 @@ printf '[launcher] Python exit code: %s; tee exit code: %s\n' "${STATUS[0]}" "${
 if [[ "${STATUS[0]}" -ne 0 ]]; then
     exit "${STATUS[0]}"
 fi
+if ! grep -q '^Finished\. Outputs:' "$LOG"; then
+    printf '[launcher] Missing completion marker; run did not finish successfully.\n' | tee -a "$LOG"
+    exit 1
+fi
 exit "${STATUS[1]}"

@@ -7,6 +7,7 @@ import json
 import os
 from pathlib import Path
 import sys
+import traceback
 import uuid
 
 repo = Path(__file__).resolve().parents[2]
@@ -191,11 +192,26 @@ def main():
             if frozen_digest(actor.base) != before:
                 raise RuntimeError("Frozen base changed during evaluation")
         print(f"Finished. Outputs: {directory}", flush=True)
+    except BaseException:
+        # Print before Isaac cleanup: SimulationApp.close() may terminate the
+        # process before Python displays an otherwise unhandled exception.
+        traceback.print_exc()
+        sys.stderr.flush()
+        if "directory" in locals():
+            (directory / "failure.txt").write_text(traceback.format_exc())
+        raise
     finally:
         raw.close()
 
 
 try:
     main()
+except BaseException:
+    traceback.print_exc()
+    sys.stderr.flush()
+    try:
+        launcher.app.close()
+    finally:
+        os._exit(1)
 finally:
     launcher.app.close()
