@@ -14,6 +14,33 @@ if AVAILABLE:
 
 @unittest.skipUnless(AVAILABLE, "Run in env_isaaclab with torch/tensordict")
 class AdapterTests(unittest.TestCase):
+    def test_ppo_updates_before_first_episode_finishes(self):
+        from rsl_rl_contrack.algorithms.ppo import PPO
+        obs = TensorDict({"policy": torch.randn(4, 5)}, batch_size=[4])
+        policy = ActorCritic(obs, {"policy": ["policy"], "critic": ["policy"]}, 3,
+                             actor_hidden_dims=[8], critic_hidden_dims=[8])
+        ppo = PPO(policy, num_learning_epochs=1, num_mini_batches=1,
+                  cmdp_warmup_iters=0, schedule="fixed")
+        ppo.init_storage("rl", 4, 2, obs, [3])
+        for completed in (False, False, True):
+            before = ppo.lambda_raw.clone()
+            for step in range(2):
+                with torch.no_grad():
+                    ppo.act(obs)
+                    done = torch.full((4,), completed and step == 1, dtype=torch.bool)
+                    extras = {"rg": torch.ones(4), "rs": torch.ones(4), "rp": torch.zeros(4)}
+                    ppo.process_env_step(obs, torch.ones(4), done, extras)
+            with torch.no_grad():
+                ppo.compute_returns(obs)
+            result = ppo.update()
+            self.assertTrue(all(__import__("math").isfinite(v) for v in result.values()))
+            if not completed:
+                self.assertEqual(len(ppo.vg_hat_buffer), 0)
+                torch.testing.assert_close(ppo.lambda_raw, before)
+            else:
+                self.assertEqual(len(ppo.vg_hat_buffer), 1)
+                self.assertAlmostEqual(ppo.vg_hat, 6.0)
+
     def test_zero_identity_frozen_gradients_and_roundtrip(self):
         torch.manual_seed(4)
         obs=TensorDict({"policy":torch.randn(4,5),"critic":torch.randn(4,6),"oracle":torch.randn(4,2)},batch_size=[4])

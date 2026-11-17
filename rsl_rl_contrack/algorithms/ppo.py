@@ -237,9 +237,14 @@ class PPO:
         else:
             w_task = torch.sigmoid(self.lambda_raw).item()
 
-        self.vg_hat = sum(self.vg_buffer) / len(self.vg_buffer)
-        self.vg_hat_buffer.append(self.vg_hat)
-        self.vg_star = max(self.vg_hat_buffer)
+        # Synchronized frame-zero resets can leave the first several rollouts
+        # without a completed episode. Keep training PPO, but do not invent
+        # episode-return observations or adapt the CMDP multiplier yet.
+        has_episode_returns = bool(self.vg_buffer)
+        if has_episode_returns:
+            self.vg_hat = sum(self.vg_buffer) / len(self.vg_buffer)
+            self.vg_hat_buffer.append(self.vg_hat)
+            self.vg_star = max(self.vg_hat_buffer)
 
         # Get mini batch generator
         if self.policy.is_recurrent:
@@ -446,7 +451,7 @@ class PPO:
         # Clear the storage
         self.storage.clear()
 
-        if self.num_updates > self.cmdp_warmup_iters:
+        if has_episode_returns and self.num_updates > self.cmdp_warmup_iters:
             with torch.no_grad():
                 vg_ratio = float(self.vg_hat / (self.vg_star + 1e-8))
                 self.lambda_raw += self.cmdp_lambda_lr * (
