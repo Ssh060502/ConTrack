@@ -3,7 +3,8 @@
 set -euo pipefail
 
 usage() {
-    echo 'Usage: bash scripts/collect_tool.sh --tool flashlight|waterbottle [--diagnostic-no-self-collisions] [--trace-reset] [--pose-break-mode strict|log-only] [--video] [--episodes COUNT] [--gpu INDEX] [--mass-scale NUMBER] [--friction NUMBER]'
+    echo 'Usage: bash scripts/collect_tool.sh --tool flashlight|waterbottle|cylinder [--video] [--episodes COUNT] [--gpu INDEX] [--mass-scale NUMBER] [--friction NUMBER]'
+    echo 'Optional: --session DIR --checkpoint FILE --data FILE --pose-break-mode strict|log-only --trace-reset --diagnostic-no-self-collisions'
     echo 'Defaults: GPU 0; mass scale 1.0; friction retains original material inheritance.'
 }
 MASS_SCALE="1.0"
@@ -46,8 +47,8 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-if [[ "$TOOL" != flashlight && "$TOOL" != waterbottle ]]; then
-    echo 'Required: --tool flashlight|waterbottle' >&2
+if [[ "$TOOL" != flashlight && "$TOOL" != waterbottle && "$TOOL" != cylinder ]]; then
+    echo 'Required: --tool flashlight|waterbottle|cylinder' >&2
     exit 2
 fi
 if [[ "$POSE_BREAK_MODE" != strict && "$POSE_BREAK_MODE" != log-only ]]; then
@@ -89,6 +90,7 @@ cd "$REPO_ROOT"
 
 if [[ -z "$SESSION" ]]; then
     case "$TOOL" in
+        cylinder) SESSION="$REPO_ROOT/logs/rsl_rl/sharpa_cylindermedium_lift_baseline/grab-s1_cylindermedium_lift-rby1a_sharpa-2026_11_16-17_40_55" ;;
         flashlight) SESSION="$REPO_ROOT/logs/rsl_rl/sharpa_flashlight_lift_baseline/grab-s1_flashlight_lift-rby1a_sharpa-2026_11_16-15_01_57" ;;
         waterbottle) SESSION="$REPO_ROOT/logs/rsl_rl/sharpa_waterbottle_baseline/grab-s1_waterbottle_offhand_1-rby1a_sharpa-24_504-2026_11_16-12_27_58" ;;
     esac
