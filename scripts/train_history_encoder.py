@@ -11,7 +11,8 @@ import uuid
 import numpy as np
 
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
-from scripts.tools.history_dataset import load_episodes, split_episodes, fit_normalization, make_manifest, HistoryWindows
+from scripts.tools.history_dataset import load_episodes, split_episodes, fit_normalization, make_manifest, HistoryWindows, restore_manifest_split
+from scripts.tools.history_evaluation import evaluate_history
 
 
 def main():
@@ -20,6 +21,7 @@ def main():
     parser.add_argument('--tool',choices=('mug','waterbottle'),default='waterbottle')
     parser.add_argument('--prepare-only',action='store_true',help='Audit/split without importing torch')
     parser.add_argument('--split-unit',choices=('episode','file'),default='episode')
+    parser.add_argument('--split-manifest',help='Freeze data membership/splits from an earlier manifest, matching content hashes')
     parser.add_argument('--history',type=int,default=32)
     parser.add_argument('--stride',type=int,default=2)
     parser.add_argument('--epochs',type=int,default=100)
@@ -31,6 +33,7 @@ def main():
     parser.add_argument('--logger',choices=('none','wandb'),default='none')
     parser.add_argument('--project',default='ConTrack-history')
     parser.add_argument('--output-root',default='outputs/history_encoder')
+    parser.add_argument('--output-dir',help='Exact new output directory; must not already exist')
     args=parser.parse_args()
     if (min(args.history,args.stride,args.epochs,args.batch_size)<=0
             or not math.isfinite(args.learning_rate) or args.learning_rate<=0
@@ -39,10 +42,18 @@ def main():
     episodes,info=load_episodes(args.inputs,args.tool)
     if len({e.condition for e in episodes})<2:
         parser.error('Need multiple physical conditions to test parameter inference')
-    splits=split_episodes(episodes,args.seed,args.split_unit)
+    if args.split_manifest:
+        frozen=json.loads(Path(args.split_manifest).read_text())
+        available_count=len(episodes)
+        episodes,splits=restore_manifest_split(episodes,info,frozen)
+        args.split_unit=frozen['split_unit']
+        print(f'[history] Frozen manifest restored by content hash; ignored {available_count-len(episodes)} extra episodes.',flush=True)
+    else:
+        splits=split_episodes(episodes,args.seed,args.split_unit)
     stats=fit_normalization(episodes,splits['train'])
     manifest=make_manifest(episodes,splits,info,args.history,args.stride,args.split_unit)
-    output=Path(args.output_root).expanduser().resolve()/f'{args.tool}_history_{datetime.now():%Y%m%d_%H%M%S}_{uuid.uuid4().hex[:6]}'
+    output=(Path(args.output_dir).expanduser().resolve() if args.output_dir else
+            Path(args.output_root).expanduser().resolve()/f'{args.tool}_history_{datetime.now():%Y%m%d_%H%M%S}_{uuid.uuid4().hex[:6]}')
     output.mkdir(parents=True)
     (output/'manifest.json').write_text(json.dumps(manifest,indent=2))
     (output/'config.json').write_text(json.dumps(vars(args),indent=2))
@@ -65,42 +76,21 @@ def main():
     architecture=dict(state_dim=state_dim,action_dim=action_dim,history=args.history,width=96,layers=2,heads=4,latent_dim=64)
 
     datasets={name:HistoryWindows(episodes,ids,stats,args.history,args.stride) for name,ids in splits.items()}
-    loaders={name:DataLoader(ds,batch_size=args.batch_size,shuffle=name=='train',num_workers=0) for name,ds in datasets.items()}
+    # Independent loader RNG makes history=1/32 see the same shuffled windows;
+    # model initialization/dropout need not consume the same random numbers.
+    loaders={name:DataLoader(ds,batch_size=args.batch_size,shuffle=name=='train',num_workers=0,
+                            generator=torch.Generator().manual_seed(args.seed+i))
+             for i,(name,ds) in enumerate(datasets.items())}
     model=HistoryEncoder(**architecture).to(device)
     optimizer=torch.optim.AdamW(model.parameters(),lr=args.learning_rate,weight_decay=1e-4)
     criterion=torch.nn.SmoothL1Loss()
     run=None
     if args.logger=='wandb':
         import wandb
-        run=wandb.init(project=args.project,name=output.name,dir=str(output),config={**vars(args),**architecture})
-    mean=torch.as_tensor(stats['parameter_mean'],device=device)
-    std=torch.as_tensor(stats['parameter_std'],device=device)
-    constant=mean.exp()
-
+        name=f'{args.tool}_history{args.history}_{output.parent.name}' if args.output_dir else output.name
+        run=wandb.init(project=args.project,name=name,dir=str(output),config={**vars(args),**architecture})
     def evaluate(loader):
-        model.eval();counts=0;loss_sum=0.;metrics={};by_episode={}
-        with torch.no_grad():
-            for batch in loader:
-                data={k:v.to(device) for k,v in batch.items() if k!='episode'}
-                pred,dynamics,_=model(data['history'],data['length'],data['state'],data['action'])
-                loss=criterion(pred,data['label'])+args.dynamics_weight*criterion(dynamics,data['delta'])
-                if not torch.isfinite(loss):raise RuntimeError('Nonfinite evaluation loss')
-                actual=(data['label']*std+mean).exp()
-                estimate=(pred*std+mean).clamp(-20,20).exp()
-                values=torch.stack([(estimate[:,0]-actual[:,0]).abs(),(estimate[:,1]-actual[:,1]).abs(),
-                                    (constant[0]-actual[:,0]).abs(),(constant[1]-actual[:,1]).abs(),
-                                    (dynamics-data['delta']).square().mean(-1),data['delta'].square().mean(-1)],dim=-1).cpu().numpy()
-                for eid,row in zip(batch['episode'].tolist(),values):
-                    by_episode.setdefault(eid,[]).append(row)
-                counts+=len(actual);loss_sum+=float(loss)*len(actual)
-        keys=['mass_mae_kg','friction_mae','constant_mass_mae_kg','constant_friction_mae','dynamics_mse_normalized','zero_delta_mse_normalized']
-        # Equal weight per episode, rather than giving long clips more votes.
-        per_episode={i:np.mean(v,axis=0) for i,v in by_episode.items()}
-        metrics.update(zip(keys,np.mean(list(per_episode.values()),axis=0).tolist()))
-        metrics['loss']=loss_sum/counts
-        for cond in sorted({episodes[i].condition for i in per_episode}):
-            value=np.mean([v for i,v in per_episode.items() if episodes[i].condition==cond],axis=0)
-            metrics.update({f'{cond}/{k}':float(x) for k,x in zip(keys,value)})
+        metrics,_=evaluate_history(model,loader,episodes,stats,info['feature_names'],device,args.dynamics_weight)
         return metrics
 
     best=float('inf')

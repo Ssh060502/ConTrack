@@ -155,6 +155,28 @@ def fit_normalization(episodes, train_ids):
                 parameter_std=np.maximum(labels.std(0),.1).astype(np.float32))
 
 
+def restore_manifest_split(episodes, info, manifest):
+    """Restore exact episode membership by content hash, even after copying files."""
+    for key in ('feature_names','action_dim','control_dt','references','hand_mapping','contact_mapping'):
+        if info.get(key) != manifest.get(key):
+            raise ValueError(f'Frozen manifest schema mismatch: {key}')
+    available = {e.digest:e for e in episodes}
+    saved = manifest['episodes']
+    digests = [e['digest'] for e in saved]
+    if len(set(digests)) != len(digests):
+        raise ValueError('Frozen manifest contains duplicate episodes')
+    missing = set(digests)-available.keys()
+    if missing:
+        raise ValueError(f'{len(missing)} frozen episodes missing or changed; supply original collection files')
+    ordered = [available[d] for d in digests]
+    old_index = {e['id']:i for i,e in enumerate(saved)}
+    result = {key:[old_index[x] for x in manifest['splits'][key]] for key in ('train','validation','test')}
+    assigned = sum(result.values(),[])
+    if sorted(assigned) != list(range(len(ordered))) or any(not v for v in result.values()):
+        raise ValueError('Frozen manifest splits must partition all episodes exactly once')
+    return ordered, result
+
+
 def window(episode, time, history, stats, normalized=None):
     """Decision at t: completed transitions <t only; target is delta x[t:t+1]."""
     if not 1 <= time < len(episode.action):

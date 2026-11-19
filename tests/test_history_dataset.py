@@ -5,7 +5,7 @@ import tempfile
 import unittest
 import numpy as np
 import h5py
-from scripts.tools.history_dataset import Episode,HistoryWindows,fit_normalization,window,split_episodes,load_episodes,physical_label
+from scripts.tools.history_dataset import Episode,HistoryWindows,fit_normalization,window,split_episodes,load_episodes,physical_label,restore_manifest_split,make_manifest
 
 
 def example(index=0,condition='a',source='batch0'):
@@ -14,6 +14,18 @@ def example(index=0,condition='a',source='batch0'):
 
 
 class HistoryDataTests(unittest.TestCase):
+    def test_frozen_membership_survives_path_changes_and_ignores_extra_data(self):
+        episodes=[example(i,'a' if i<3 else 'b') for i in range(6)]
+        splits=split_episodes(episodes)
+        info=dict(feature_names=['a','b','c'],action_dim=2,control_dt=1/60,references=['waterbottle.h5'],hand_mapping=None,contact_mapping=None)
+        manifest=make_manifest(episodes,splits,info,32,2,'episode')
+        moved=copy.deepcopy(episodes[::-1])
+        for e in moved:e.identifier='copied/'+e.identifier;e.source='copied/'+e.source
+        restored,actual=restore_manifest_split(moved+[example(99)],info,manifest)
+        self.assertEqual([e.digest for e in restored],[e.digest for e in episodes])
+        self.assertEqual(actual,splits)
+        with self.assertRaises(ValueError):restore_manifest_split(moved[:-1],info,manifest)
+
     def test_future_and_current_action_cannot_leak_into_encoder_history(self):
         episode=example();stats=fit_normalization([episode],[0])
         a=window(episode,2,4,stats)
