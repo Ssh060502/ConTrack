@@ -14,6 +14,26 @@ if AVAILABLE:
 
 @unittest.skipUnless(AVAILABLE, "Run in env_isaaclab with torch/tensordict")
 class AdapterTests(unittest.TestCase):
+    def test_explicit_task_only_weight_stays_one_after_episode_returns(self):
+        from rsl_rl_contrack.algorithms.ppo import PPO
+        obs = TensorDict({"policy": torch.randn(4, 5)}, batch_size=[4])
+        policy = ActorCritic(obs, {"policy": ["policy"], "critic": ["policy"]}, 3,
+                             actor_hidden_dims=[8], critic_hidden_dims=[8])
+        ppo = PPO(policy, num_learning_epochs=1, num_mini_batches=1,
+                  task_only=True, cmdp_warmup_iters=0, schedule="fixed")
+        ppo.init_storage("rl", 4, 2, obs, [3])
+        for _ in range(2):
+            for step in range(2):
+                with torch.no_grad():
+                    ppo.act(obs)
+                    ppo.process_env_step(obs, torch.ones(4), torch.full((4,),step==1,dtype=torch.bool),
+                                         {"rg":torch.ones(4),"rs":torch.ones(4),"rp":torch.zeros(4)})
+            with torch.no_grad():
+                ppo.compute_returns(obs)
+            result = ppo.update()
+            self.assertEqual(result["cmdp/task_weight"], 1.)
+            self.assertEqual(float(ppo.lambda_raw), 20.)
+
     def test_ppo_updates_before_first_episode_finishes(self):
         from rsl_rl_contrack.algorithms.ppo import PPO
         obs = TensorDict({"policy": torch.randn(4, 5)}, batch_size=[4])

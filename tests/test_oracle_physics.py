@@ -46,6 +46,14 @@ class View:
 
 
 class PhysicsTests(unittest.TestCase):
+    def test_runner_counter_reset_is_forwarded_to_reward_wrapper(self):
+        inner = SimpleNamespace(it_step_count=32)
+        proxy = physics.OracleContextWrapper(inner, None)
+        proxy.it_step_count = 0
+        self.assertEqual(inner.it_step_count, 0)
+        inner.it_step_count = 32
+        self.assertEqual(proxy.it_step_count, 32)
+
     def test_condition_validation(self):
         self.assertEqual(physics.parse_conditions("1:2,3:0.7"), [(1.,2.),(3.,.7)])
         for value in ("", "1", "0:2", "1:0", "nan:2", "1:inf", "1:2:3"):

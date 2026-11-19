@@ -73,6 +73,16 @@ class OracleContextWrapper:
     def __getattr__(self, name):
         return getattr(self.env, name)
 
+    @property
+    def it_step_count(self):
+        return self.env.it_step_count
+
+    @it_step_count.setter
+    def it_step_count(self, value):
+        # The runner resets this counter after logging. Do not shadow the
+        # reward wrapper's actual counter on this proxy.
+        self.env.it_step_count = value
+
     def _augment(self, obs):
         result = obs.clone(recurse=False)
         result.set("oracle", self.context)

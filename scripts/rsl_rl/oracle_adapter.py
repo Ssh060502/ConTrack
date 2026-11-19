@@ -9,6 +9,7 @@ from pathlib import Path
 import sys
 import traceback
 import uuid
+import yaml
 
 repo = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(repo))
@@ -16,16 +17,19 @@ sys.path.insert(0, str(repo / "source" / "ConTrack"))
 from isaaclab.app import AppLauncher
 
 parser = argparse.ArgumentParser(description=__doc__)
+parser.add_argument("--tool", choices=("mug", "waterbottle"), default="mug")
 parser.add_argument("--mode", choices=("train", "evaluate"), default="train")
-parser.add_argument("--session", default=str(repo / "logs/rsl_rl/sharpa_mug_sweep/grab-s4_mug_pass_1-rby1a_sharpa-2026_10_14-03_57_03-sharpa_mug_sweep_trial"))
+parser.add_argument("--session", default=None)
 parser.add_argument("--base_checkpoint", default=None)
-parser.add_argument("--data", default="/mnt/ssd1/shenghe/datasets/GRAB_contrack/grab-s4_mug_pass_1-rby1a_sharpa.h5")
-parser.add_argument("--conditions", default="1:2,3:2,6:2,1:0.7,1:0.2")
+parser.add_argument("--data", default=None, help="Defaults to reference_path from session params/env.yaml")
+parser.add_argument("--conditions", default=None)
 parser.add_argument("--num_envs", type=int, default=256)
 parser.add_argument("--max_iterations", type=int, default=1000)
 parser.add_argument("--save_interval", type=int, default=100)
 parser.add_argument("--rollout_steps", type=int, default=32)
-parser.add_argument("--correction_scale", type=float, default=.5)
+parser.add_argument("--correction_scale", type=float, default=None)
+parser.add_argument("--objective", choices=("task-only", "inherit"), default=None,
+                    help="task-only fixes actor task weight to 1; inherit retains original CMDP settings")
 parser.add_argument("--policy", choices=("adapter", "base", "zero"), default="adapter")
 parser.add_argument("--adapter_checkpoint", default=None, help="Resume training or evaluate this adapter checkpoint")
 parser.add_argument("--episodes", type=int, default=10)
@@ -37,9 +41,26 @@ parser.add_argument("--output_root", default="logs/oracle_adapter")
 AppLauncher.add_app_launcher_args(parser)
 args = parser.parse_args()
 
-session = Path(args.session).expanduser().resolve()
-base_checkpoint = Path(args.base_checkpoint).expanduser().resolve() if args.base_checkpoint else session / "model_1500.pt"
-data = Path(args.data).expanduser().resolve()
+profiles = {
+    "mug": ("sharpa_mug_sweep/grab-s4_mug_pass_1-rby1a_sharpa-2026_10_14-03_57_03-sharpa_mug_sweep_trial", "model_1500.pt"),
+    "waterbottle": ("sharpa_waterbottle_baseline/grab-s1_waterbottle_offhand_1-rby1a_sharpa-24_504-2026_11_16-12_27_58", "model_1999.pt"),
+}
+default_session, default_model = profiles[args.tool]
+session = Path(args.session).expanduser().resolve() if args.session else repo / "logs/rsl_rl" / default_session
+base_checkpoint = Path(args.base_checkpoint).expanduser().resolve() if args.base_checkpoint else session / default_model
+if args.data:
+    data = Path(args.data).expanduser().resolve()
+else:
+    try:
+        # Isaac's YAML contains Python tags; read scalar paths without object construction.
+        cfg_data = yaml.load((session/"params/env.yaml").read_text(), Loader=yaml.BaseLoader)
+        data = Path(cfg_data["reference_path"]).expanduser().resolve()
+    except (OSError, KeyError, TypeError, yaml.YAMLError) as exc:
+        parser.error(f"Cannot read reference_path from session: {exc}; specify --data")
+args.conditions = args.conditions or ("1:2,3:2" if args.tool=="waterbottle" else "1:2,3:2,6:2,1:0.7,1:0.2")
+if args.correction_scale is None:
+    args.correction_scale = .1 if args.tool=="waterbottle" else .5
+args.objective = args.objective or ("task-only" if args.tool=="waterbottle" else "inherit")
 for path in (session/"params/agent.yaml", base_checkpoint, data):
     if not path.is_file():
         parser.error(f"Required file missing: {path}")
@@ -63,7 +84,6 @@ launcher = AppLauncher(args)
 
 import gymnasium as gym
 import torch
-import yaml
 from isaaclab_tasks.utils import parse_env_cfg
 from isaaclab_rl.rsl_rl import RslRlVecEnvWrapper
 import isaaclab_tasks
@@ -71,6 +91,7 @@ import ConTrack.tasks
 from ConTrack.tasks.manager_based.mimic_rby1a_sharpa import mdp
 from rsl_rl_contrack.env.cons_mimic_reward_wrapper import ConsMimicRewardWrapper
 from rsl_rl_contrack.env.oracle_physics import parse_conditions, configure_physics, OracleContextWrapper
+from rsl_rl_contrack.env.oracle_diagnostics import OracleDiagnosticsWrapper
 from rsl_rl_contrack.modules.oracle_adapter import OracleAdapterActorCritic, frozen_digest
 from rsl_rl_contrack.runners import on_policy_runner as runner_module
 from rsl_rl_contrack.utils import resolve_obs_groups
@@ -82,6 +103,15 @@ def never_pose_break(env):
 
 
 class AdapterRunner(runner_module.OnPolicyRunner):
+    def log(self, locs, *args, **kwargs):
+        super().log(locs, *args, **kwargs)
+        values = self.env.drain_diagnostics()
+        for key, value in values.items():
+            self.writer.add_scalar(key, value, locs["it"])
+        with (Path(self.log_dir)/"diagnostics.jsonl").open("a") as f:
+            f.write(json.dumps({"iteration": locs["it"], **values,
+                                "cmdp_task_weight": locs["loss_dict"]["cmdp/task_weight"]})+"\n")
+
     def save(self, path, infos=None):
         if frozen_digest(self.alg.policy.base) != self.adapter_info["frozen_base_digest"]:
             raise RuntimeError("Frozen base changed before checkpoint save")
@@ -107,15 +137,24 @@ def main():
         wrapped = RslRlVecEnvWrapper(raw, clip_actions=original_cfg.get("clip_actions"))
         context, physics = configure_physics(raw.unwrapped, conditions)
         env = OracleContextWrapper(ConsMimicRewardWrapper(wrapped, raw.unwrapped), context)
+        if args.mode == "train":
+            names = [raw.unwrapped.scene[name].joint_names[int(j)]
+                     for name, ids, _ in raw.unwrapped.ref_hands for j in ids]
+            arms = [i for i, name in enumerate(names) if "_arm_" in name]
+            fingers = [i for i, name in enumerate(names) if "_arm_" not in name]
+            if len(names) != env.num_actions or not arms or not fingers:
+                raise ValueError("Cannot determine arm/finger action mapping")
+            env = OracleDiagnosticsWrapper(env, conditions, physics["condition_id"], arms, fingers)
         env.reset()
         obs = env.get_observations()
         base_groups = resolve_obs_groups(obs, copy.deepcopy(original_cfg.get("obs_groups") or {}), ["critic"])
         policy_cfg = copy.deepcopy(original_cfg["policy"])
         if policy_cfg.pop("class_name") != "ActorCritic":
-            raise ValueError("Prototype supports the feed-forward ActorCritic mug checkpoint only")
+            raise ValueError("Prototype supports feed-forward ActorCritic checkpoints only")
         config = copy.deepcopy(original_cfg)
         config.update(device=device, seed=args.seed, logger=args.logger, wandb_project=args.project,
-                      num_steps_per_env=args.rollout_steps, save_interval=args.save_interval)
+                      num_steps_per_env=args.rollout_steps, save_interval=args.save_interval,
+                      max_iterations=args.max_iterations)
         config["obs_groups"] = {key: list(base_groups[key])+["oracle"] for key in ("policy", "critic")}
         config["policy"] = dict(class_name="OracleAdapterActorCritic", base_checkpoint=str(base_checkpoint),
                                 base_policy_cfg=policy_cfg, base_obs_groups=base_groups,
@@ -124,6 +163,8 @@ def main():
                                 critic_hidden_dims=[128,128], activation="elu", init_noise_std=.05)
         config["algorithm"].update(num_mini_batches=4, num_learning_epochs=5, learning_rate=3e-4,
                                    entropy_coef=.001)
+        if args.objective == "task-only":
+            config["algorithm"].update(task_only=True, cmdp_warmup_iters=0)
         if config["algorithm"].get("rnd_cfg") or config["algorithm"].get("symmetry_cfg"):
             raise ValueError("RND/symmetry are not supported in this adapter prototype")
         saved = None
@@ -132,29 +173,37 @@ def main():
             run = saved.get("infos", {}).get("oracle_adapter") if isinstance(saved.get("infos"), dict) else None
             if run is None:
                 raise ValueError("Not an oracle-adapter checkpoint")
+            if Path(run["metadata"]["reference_path"]).name != data.name:
+                raise ValueError("Adapter reference_path differs from this tool/data; do not load a mug adapter for waterbottle")
             for key in ("policy", "obs_groups", "algorithm"):
                 config[key] = copy.deepcopy(run["runner_config"][key])
             # The frozen base is embedded in adapter checkpoints, but the original
             # file is still checked during construction for architecture validation.
             config["policy"]["base_checkpoint"] = str(base_checkpoint)
         directory = Path(args.output_root).expanduser().resolve() / (
-            f"mug_{args.mode}_{args.policy}_{datetime.now():%Y%m%d_%H%M%S}_{uuid.uuid4().hex[:6]}")
+            f"{args.tool}_{args.mode}_{args.policy}_{datetime.now():%Y%m%d_%H%M%S}_{uuid.uuid4().hex[:6]}")
         directory.mkdir(parents=True)
         cfg.log_dir = str(directory)
         config["wandb_run_name"] = directory.name
-        config["experiment_name"] = "oracle_adapter_mug"
+        config["experiment_name"] = f"oracle_adapter_{args.tool}"
         pristine = copy.deepcopy(config)
         (directory/"runner_config.json").write_text(json.dumps(pristine, indent=2))
-        metadata = {"base_checkpoint":str(base_checkpoint), "reference_path":str(data),
+        metadata = {"tool":args.tool, "base_checkpoint":str(base_checkpoint), "reference_path":str(data),
                     "seed":args.seed, "mode":args.mode, "evaluation_policy":args.policy,
                     "conditions":conditions, "reset":"reference frame 0, no curriculum, pose log-only",
                     "reward":"original task/style/penalty terms, unchanged", "robot_self_collisions":True,
-                    "physics_assignment":"fixed per parallel environment"}
+                    "physics_assignment":"fixed per parallel environment",
+                    "checkpoint":str(args.adapter_checkpoint or base_checkpoint), "task":task,
+                    "pose_break_mode":"log-only",
+                    "actor_objective":"task-only" if config["algorithm"].get("task_only",False) else "inherited CMDP",
+                    "correction_scale":config["policy"]["correction_scale"]}
         (directory/"run_metadata.json").write_text(json.dumps(metadata, indent=2))
         (directory/"physics.json").write_text(json.dumps(physics, indent=2))
         runner_module.OracleAdapterActorCritic = OracleAdapterActorCritic
         runner = AdapterRunner(env, config, log_dir=str(directory) if args.mode=="train" else None, device=device)
         actor = runner.alg.policy
+        if args.mode == "train":
+            env.policy = actor
         source_digest = frozen_digest(actor.base)
         # Only trainable parameters are in optimizer groups, including on resume.
         runner.alg.optimizer = torch.optim.Adam(
@@ -181,6 +230,12 @@ def main():
             runner.save(str(directory/"adapter_final.pt"), infos={"oracle_adapter":{
                 "runner_config":pristine, "metadata":metadata, "frozen_base_digest":before}})
             print("[adapter] Frozen base hash verified unchanged.", flush=True)
+            if runner.writer is not None:
+                runner.writer.flush()
+                runner.writer.close()
+            if args.logger == "wandb":
+                import wandb
+                wandb.finish()
         else:
             actor.eval()
             chosen = actor.base if args.policy=="base" else actor

@@ -47,6 +47,7 @@ class PPO:
         cmdp_vg_window: int = 100,
         cmdp_vg_star_window: int = 20,
         cmdp_lambda_init: float = 0.0,
+        task_only: bool = False,
         # RND parameters
         rnd_cfg: dict | None = None,
         # Symmetry parameters
@@ -132,6 +133,7 @@ class PPO:
         self.cmdp_lambda_lr = cmdp_lambda_lr
         self.cmdp_warmup_iters = cmdp_warmup_iters
         self.cmdp_lambda_init = cmdp_lambda_init
+        self.task_only = task_only
         self.vg_hat_buffer = deque(maxlen=cmdp_vg_star_window)
         self.vg_star = 0.0
         self.vg_hat = 0.0
@@ -228,7 +230,7 @@ class PPO:
         # Symmetry loss
         mean_symmetry_loss = 0 if self.symmetry else None
 
-        if self.num_updates <= self.cmdp_warmup_iters:
+        if self.task_only or self.num_updates <= self.cmdp_warmup_iters:
             self.lambda_raw.fill_(20.0)
             w_task = 1.0
         elif self.num_updates == self.cmdp_warmup_iters + 1:
@@ -451,7 +453,7 @@ class PPO:
         # Clear the storage
         self.storage.clear()
 
-        if has_episode_returns and self.num_updates > self.cmdp_warmup_iters:
+        if not self.task_only and has_episode_returns and self.num_updates > self.cmdp_warmup_iters:
             with torch.no_grad():
                 vg_ratio = float(self.vg_hat / (self.vg_star + 1e-8))
                 self.lambda_raw += self.cmdp_lambda_lr * (

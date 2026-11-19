@@ -51,7 +51,12 @@ class OracleAdapterActorCritic(ActorCritic):
     def mean_action(self, obs):
         with torch.no_grad():
             base_action = self.base.act_inference(obs)
-        return base_action + self.correction(obs)
+        correction = self.correction(obs)
+        # Detached rollout diagnostics; these are not model state or loss terms.
+        self.last_action_components = {"base": base_action.detach(),
+                                       "correction": correction.detach(),
+                                       "mean": (base_action + correction).detach()}
+        return base_action + correction
 
     def act(self, obs, **kwargs):
         mean = self.mean_action(obs)
