@@ -4,6 +4,7 @@ import argparse
 import copy
 from datetime import datetime
 import json
+import math
 import os
 from pathlib import Path
 import sys
@@ -23,6 +24,7 @@ parser.add_argument("--session", default=None)
 parser.add_argument("--base_checkpoint", default=None)
 parser.add_argument("--data", default=None, help="Defaults to reference_path from session params/env.yaml")
 parser.add_argument("--conditions", default=None)
+parser.add_argument("--oracle-mass-scale", type=float, help="Evaluation ablation: override ONLY network mass input, relative to nominal; simulator mass unchanged")
 parser.add_argument("--num_envs", type=int, default=256)
 parser.add_argument("--max_iterations", type=int, default=1000)
 parser.add_argument("--save_interval", type=int, default=100)
@@ -75,6 +77,10 @@ if args.mode == "evaluate" and args.policy == "adapter" and not args.adapter_che
     parser.error("Use --adapter_checkpoint, or --policy base/zero for initial checks")
 if args.policy in ("base", "zero") and args.adapter_checkpoint:
     parser.error("base/zero checks must not load an adapter checkpoint")
+if args.oracle_mass_scale is not None and (args.mode != 'evaluate' or args.policy != 'adapter'):
+    parser.error('--oracle-mass-scale is only for adapter evaluation')
+if args.oracle_mass_scale is not None and (not math.isfinite(args.oracle_mass_scale) or args.oracle_mass_scale<=0):
+    parser.error('--oracle-mass-scale must be finite and positive')
 os.environ["CONTRACK_RBY1A_SHARPA_DATA"] = str(data)
 # Establish the original nominal mass before per-environment scaling. Do not let
 # shell variables silently change both the nominal mass and the scale labels.
@@ -91,7 +97,7 @@ import isaaclab_tasks
 import ConTrack.tasks
 from ConTrack.tasks.manager_based.mimic_rby1a_sharpa import mdp
 from rsl_rl_contrack.env.cons_mimic_reward_wrapper import ConsMimicRewardWrapper
-from rsl_rl_contrack.env.oracle_physics import parse_conditions, configure_physics, OracleContextWrapper
+from rsl_rl_contrack.env.oracle_physics import parse_conditions, configure_physics, OracleContextWrapper, override_mass_context
 from rsl_rl_contrack.env.oracle_diagnostics import OracleDiagnosticsWrapper
 from rsl_rl_contrack.modules.oracle_adapter import OracleAdapterActorCritic, frozen_digest
 from rsl_rl_contrack.runners import on_policy_runner as runner_module
@@ -137,6 +143,8 @@ def main():
         original_cfg = yaml.safe_load((session/"params/agent.yaml").read_text())
         wrapped = RslRlVecEnvWrapper(raw, clip_actions=original_cfg.get("clip_actions"))
         context, physics = configure_physics(raw.unwrapped, conditions)
+        if args.oracle_mass_scale is not None:
+            context = override_mass_context(context, physics, args.oracle_mass_scale)
         env = OracleContextWrapper(ConsMimicRewardWrapper(wrapped, raw.unwrapped), context)
         if args.mode == "train":
             names = [raw.unwrapped.scene[name].joint_names[int(j)]
@@ -196,6 +204,8 @@ def main():
                     "reward":"original task/style/penalty terms, unchanged", "robot_self_collisions":True,
                     "physics_assignment":"fixed per parallel environment",
                     "checkpoint":str(args.adapter_checkpoint or base_checkpoint), "task":task,
+                    "oracle_mass_scale_override":args.oracle_mass_scale,
+                    "oracle_input_mass_kg":context[:,0].exp().cpu().tolist(),
                     "pose_break_mode":"log-only",
                     "actor_objective":"task-only" if config["algorithm"].get("task_only",False) else "inherited CMDP",
                     "correction_scale":config["policy"]["correction_scale"]}

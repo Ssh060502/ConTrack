@@ -46,6 +46,17 @@ class View:
 
 
 class PhysicsTests(unittest.TestCase):
+    def test_counterfactual_input_never_changes_physics_or_friction(self):
+        context=tensor(np.log([[.216,2.]]))
+        report={'conditions':[(3.,2.)],'condition_id':[0],'actual_mass_kg':[[.216]]}
+        original=context.copy()
+        changed=physics.override_mass_context(context,report,1.)
+        np.testing.assert_allclose(np.exp(changed),[[.072,2.]])
+        np.testing.assert_array_equal(context,original)
+        self.assertEqual(report['actual_mass_kg'],[[.216]])
+        for invalid in (0,-1,float('nan')):
+            with self.assertRaises(ValueError):physics.override_mass_context(context,report,invalid)
+
     def test_runner_counter_reset_is_forwarded_to_reward_wrapper(self):
         inner = SimpleNamespace(it_step_count=32)
         proxy = physics.OracleContextWrapper(inner, None)

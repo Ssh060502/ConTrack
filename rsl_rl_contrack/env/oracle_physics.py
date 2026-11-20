@@ -19,6 +19,20 @@ def parse_conditions(text):
     return result
 
 
+def override_mass_context(context, physics, mass_scale):
+    """Counterfactual network input only; never writes simulator properties."""
+    if not math.isfinite(mass_scale) or mass_scale <= 0:
+        raise ValueError('Oracle input mass scale must be finite and positive')
+    result = context.clone()
+    values = []
+    for i, cid in enumerate(physics['condition_id']):
+        actual = float(physics['actual_mass_kg'][i][0])
+        physical_scale = physics['conditions'][cid][0]
+        values.append(math.log(actual/physical_scale*mass_scale))
+    result[:, 0] = torch.tensor(values,device=context.device,dtype=context.dtype)
+    return result
+
+
 def configure_physics(base, conditions):
     if base.num_objects != 1:
         raise ValueError("Oracle adapter prototype supports exactly one tracked object")
