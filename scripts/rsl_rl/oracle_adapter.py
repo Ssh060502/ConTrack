@@ -38,6 +38,7 @@ parser.add_argument("--seed", type=int, default=42)
 parser.add_argument("--logger", choices=("wandb", "tensorboard"), default="wandb")
 parser.add_argument("--project", default="ConTrack-adapter")
 parser.add_argument("--output_root", default="logs/oracle_adapter")
+parser.add_argument("--output-dir", help="Exact new output directory; must not already exist")
 AppLauncher.add_app_launcher_args(parser)
 args = parser.parse_args()
 
@@ -180,8 +181,9 @@ def main():
             # The frozen base is embedded in adapter checkpoints, but the original
             # file is still checked during construction for architecture validation.
             config["policy"]["base_checkpoint"] = str(base_checkpoint)
-        directory = Path(args.output_root).expanduser().resolve() / (
-            f"{args.tool}_{args.mode}_{args.policy}_{datetime.now():%Y%m%d_%H%M%S}_{uuid.uuid4().hex[:6]}")
+        directory = (Path(args.output_dir).expanduser().resolve() if args.output_dir else
+                     Path(args.output_root).expanduser().resolve() / (
+                         f"{args.tool}_{args.mode}_{args.policy}_{datetime.now():%Y%m%d_%H%M%S}_{uuid.uuid4().hex[:6]}"))
         directory.mkdir(parents=True)
         cfg.log_dir = str(directory)
         config["wandb_run_name"] = directory.name
