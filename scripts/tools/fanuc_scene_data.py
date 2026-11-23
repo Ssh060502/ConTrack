@@ -2,8 +2,10 @@
 from __future__ import annotations
 
 import hashlib
+import copy
 import json
 import math
+import re
 import shutil
 import xml.etree.ElementTree as ET
 from pathlib import Path
@@ -22,6 +24,28 @@ HAND_SUFFIXES = (
 
 def joint_names(side):
     return [f'J{i}' for i in range(1, 7)] + [f'{side}_{s}' for s in HAND_SUFFIXES]
+
+
+def initial_joint_positions(names, values, limits=None):
+    """Config scalars must be Python floats, not NumPy float64 tensors-in-waiting.
+
+    Isaac Lab constructs a tensor from the config values and index-assigns it
+    into its float32 default-state buffer during sim.reset(). NumPy float64
+    elements make that inferred source tensor float64 even with a float32 default.
+    """
+    values = finite(values, 'initial joint positions')
+    if values.shape != (len(names),) or len(set(names)) != len(names):
+        raise ValueError('Initial joint names and values must be unique and aligned')
+    if limits is not None:
+        low = np.array([limits[n]['lower'] for n in names])
+        high = np.array([limits[n]['upper'] for n in names])
+        if np.any(values < low-1e-6) or np.any(values > high+1e-6):
+            raise ValueError('Initial joint position genuinely outside URDF limits')
+        # URDF radians -> importer degrees -> float32 radians can move a bound
+        # by a few ULPs. Start 1e-5 rad inside, never widen the physical limits.
+        margin = np.minimum(1e-5, (high-low)/4)
+        values = np.clip(values, low+margin, high-margin)
+    return {name: float(value) for name, value in zip(names, values)}
 
 
 def sha256(path):
@@ -134,6 +158,74 @@ def portable_urdf(source, destination, side):
     return {name: {field: float(joints[name].find('limit').get(field))
                    for field in ('lower', 'upper', 'effort', 'velocity')}
             for name in joint_names(side)}
+
+
+def stage_import_urdf(source, destination, collision_visuals=False):
+    """Normalize importer-sensitive metadata without editing the signed bundle.
+
+    Remove only the identity, massless world wrapper; preserve base_link and
+    every physical link/joint transform. Give anonymous materials and hashed
+    mesh basenames valid, nonempty USD identifiers for Isaac Sim 5.1.
+    """
+    source, destination = Path(source).resolve(), Path(destination).resolve()
+    root = ET.parse(source).getroot()
+    wrapper = root.find("link[@name='world']")
+    base = root.find("joint[@name='base_joint']")
+    if wrapper is None or len(wrapper) or base is None or base.get('type') != 'fixed':
+        raise ValueError('Expected empty world wrapper and fixed base_joint')
+    if (base.find('parent').get('link') != 'world'
+            or base.find('child').get('link') != 'base_link'):
+        raise ValueError('Unexpected base wrapper topology')
+    for joint in root.findall('joint'):
+        if joint is not base and (joint.find('parent').get('link') == 'world'
+                                  or joint.find('child').get('link') == 'world'):
+            raise ValueError('World wrapper has additional branches')
+    origin = base.find('origin')
+    if origin is not None:
+        for field in ('xyz', 'rpy'):
+            if not np.allclose([float(v) for v in origin.get(field, '0 0 0').split()], 0):
+                raise ValueError('Cannot remove nonidentity world wrapper')
+    root.remove(wrapper)
+    root.remove(base)
+    if collision_visuals:
+        # DAE files contain nested scene references. For rendering diagnostics,
+        # replace ONLY those visuals with the existing collision representation,
+        # including its origin and scale (not merely the filename).
+        for link in root.findall('link'):
+            dae_visuals = [v for v in link.findall('visual') if any(
+                Path(m.get('filename')).suffix.lower() == '.dae' for m in v.iter('mesh'))]
+            if not dae_visuals:
+                continue
+            collisions = link.findall('collision')
+            if not collisions:
+                raise ValueError(f"No collision visual alternative for {link.get('name')}")
+            for visual in dae_visuals:
+                link.remove(visual)
+            for collision in collisions:
+                visual = copy.deepcopy(collision)
+                visual.tag = 'visual'
+                visual.attrib.pop('name', None)
+                link.append(visual)
+    material_names = {m.get('name') for m in root.iter('material') if m.get('name')}
+    for index, material in enumerate(root.iter('material')):
+        if not material.get('name'):
+            name = f'fanuc_import_material_{index}'
+            while name in material_names:
+                name += '_'
+            material.set('name', name)
+            material_names.add(name)
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    for mesh in root.iter('mesh'):
+        original = (source.parent / mesh.get('filename')).resolve()
+        name = 'mesh_' + re.sub(r'[^a-zA-Z0-9_]', '_', original.stem) + original.suffix.lower()
+        target = destination.parent / 'meshes' / name
+        target.parent.mkdir(exist_ok=True)
+        if not target.exists():
+            shutil.copyfile(original, target)
+        mesh.set('filename', target.relative_to(destination.parent).as_posix())
+    ET.indent(root)
+    ET.ElementTree(root).write(destination, encoding='utf-8', xml_declaration=True)
+    return destination
 
 
 def prepare_bundle(retargeting_root, trajectory, reference, output, table_bounds):

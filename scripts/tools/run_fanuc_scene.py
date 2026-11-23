@@ -20,6 +20,10 @@ def parse_args():
     parser.add_argument('--physics-hz', type=int, default=120)
     parser.add_argument('--control-hz', type=int, default=50)
     parser.add_argument('--video', action='store_true')
+    parser.add_argument('--collision-visuals', action='store_true',
+                        help='Display DAE arm links using their collision meshes; physics unchanged')
+    parser.add_argument('--disable-fabric', action='store_true',
+                        help='Diagnostic USD synchronization path instead of Fabric')
     parser.add_argument('--video-fps', type=int, default=30)
     parser.add_argument('--self-collision', action=argparse.BooleanOptionalAction, default=True)
     parser.add_argument('--collider', choices=['convex_hull', 'convex_decomposition'],
@@ -60,20 +64,22 @@ def run(args, app, data, output):
     import numpy as np
     import torch
     import isaaclab.sim as sim_utils
-    from fanuc_scene_runtime import build_scene
+    from fanuc_scene_runtime import build_scene, scene_visual_report
 
     manifest, q, poses, fps, vertices, faces = data
     duration = (len(q)-1)/fps
     if args.duration is not None:
         duration = min(duration, args.duration)
     dt = 1./args.physics_hz
-    sim = sim_utils.SimulationContext(sim_utils.SimulationCfg(dt=dt, device=args.device))
+    sim = sim_utils.SimulationContext(sim_utils.SimulationCfg(
+        dt=dt, device=args.device, use_fabric=not args.disable_fabric))
     eye, look = [2.1, -2., 1.6], [.45, -.45, .05]
     sim.set_camera_view(eye, look)
     robots, hammer = build_scene(sim, args.bundle.resolve(), manifest, q, poses,
                                  vertices, faces, args, output)
     camera = writer = None
     if args.video:
+        print('[fanuc] Creating review camera', flush=True)
         import imageio.v2 as imageio
         from isaaclab.sensors import Camera, CameraCfg
         camera = Camera(CameraCfg(
@@ -81,11 +87,15 @@ def run(args, app, data, output):
             data_types=['rgb'], spawn=sim_utils.PinholeCameraCfg(
                 focal_length=24., horizontal_aperture=24., clipping_range=(.01, 100.))))
         writer = imageio.get_writer(str(output / 'video.mp4'), fps=args.video_fps)
+    print('[fanuc] Exporting stage snapshot', flush=True)
     sim.stage.GetRootLayer().Export(str(output / 'scene.usda'))
+    print('[fanuc] Starting sim.reset()', flush=True)
     sim.reset()
+    print('[fanuc] sim.reset() complete', flush=True)
     for side, robot in robots.items():
-        expected = torch.tensor(manifest['bases_xyz_wxyz'][side], device=sim.device)
         actual = robot.data.root_state_w[0, :7]
+        expected = torch.as_tensor(manifest['bases_xyz_wxyz'][side],
+                                   dtype=actual.dtype, device=sim.device)
         if (not torch.allclose(actual[:3], expected[:3], atol=1e-4, rtol=0)
                 or abs(float(torch.dot(actual[3:], expected[3:]))) < 1.-1e-5):
             raise RuntimeError(f'{side}: imported root pose differs from recorded NPZ base')
@@ -104,6 +114,11 @@ def run(args, app, data, output):
         target, pose = sample_motion(q, poses, fps, time)
         for index, (side, robot) in enumerate(robots.items()):
             values = tensor(target[index*28:(index+1)*28])
+            bounds = robot.data.joint_pos_limits[:, ids[side], :]
+            bounded = torch.maximum(torch.minimum(values, bounds[..., 1]), bounds[..., 0])
+            if float(torch.max(torch.abs(values-bounded))) > 2e-5:
+                raise RuntimeError(f'{side}: imported joint bounds disagree with trajectory by >2e-5 rad')
+            values = bounded
             if direct:
                 robot.write_joint_state_to_sim(values, torch.zeros_like(values), joint_ids=ids[side])
             robot.set_joint_position_target(values, joint_ids=ids[side])
@@ -117,10 +132,27 @@ def run(args, app, data, output):
     for robot in robots.values():
         robot.reset()
     hammer.reset()
-    sim.forward()
+    # Reference playback pins the written state through one real physics step
+    # (no gravity, no collisions, zero velocity, target == state). Writing state
+    # and calling only sim.forward() left the renderer at the USD zero pose.
+    reference = args.mode == 'reference'
+    if reference:
+        sim.step(render=False)
+    else:
+        sim.forward()
     for robot in robots.values():
         robot.update(dt)
     hammer.update(dt)
+    for index, (side, robot) in enumerate(robots.items()):
+        error = float(np.max(np.abs(
+            robot.data.joint_pos[0, ids[side]].detach().cpu().numpy() - q[0, index*28:(index+1)*28])))
+        print(f'[fanuc] {side}: initial joint readback error {error:.2e} rad', flush=True)
+        if error > 1e-3:
+            raise RuntimeError(f'{side}: written initial joints were not applied ({error:.3f} rad)')
+    visual_report = scene_visual_report(sim.stage)
+    visual_report['camera_eye'] = eye
+    visual_report['camera_target'] = look
+    (output / 'visual_report.json').write_text(json.dumps(visual_report, indent=2), encoding='utf-8')
     # Flush renderer only; never advance dynamics while warming a camera.
     if camera is not None:
         for _ in range(4):
@@ -154,7 +186,7 @@ def run(args, app, data, output):
             time_before, time_after = step*dt, (step+1)*dt
             if args.mode == 'reference':
                 target = write_reference(min(time_after, duration), True)
-                sim.forward()  # Geometry-only: no physics integration or grasp claim.
+                sim.step(render=False)  # Pinned state only; no grasp claim.
             else:
                 tick = math.floor(time_before*args.control_hz + 1e-8)
                 if tick != last_tick:
@@ -169,7 +201,10 @@ def run(args, app, data, output):
             if writer is not None and (step+1) % (args.physics_hz//args.video_fps) == 0:
                 sim.render()
                 camera.update(dt=1./args.video_fps, force_recompute=True)
-                writer.append_data(camera.data.output['rgb'][0, :, :, :3].detach().cpu().numpy())
+                rgb = camera.data.output['rgb'][0, :, :, :3].detach().cpu().numpy()
+                writer.append_data(rgb)
+                if not (output / 'first_frame.png').exists():
+                    imageio.imwrite(str(output / 'first_frame.png'), rgb)
             elif not args.headless:
                 sim.render()
             if (step+1) % args.physics_hz == 0:
@@ -225,14 +260,33 @@ def main():
     from isaaclab.app import AppLauncher
     if args.video:
         args.enable_cameras = True
+    import faulthandler
+    faulthandler.enable()
     launcher = AppLauncher(args)
+    failed = False
     try:
         run(args, launcher.app, data, output)
     except Exception as error:
-        (output / 'FAILED.txt').write_text(f'{type(error).__name__}: {error}', encoding='utf-8')
-        raise
+        import traceback
+        import sys
+        failed = True
+        detail = traceback.format_exc()
+        (output / 'FAILED.txt').write_text(detail, encoding='utf-8')
+        print(detail, file=sys.stderr, flush=True)
+        print(f'[fanuc] FAILED. Details: {output / "FAILED.txt"}', file=sys.stderr, flush=True)
+        # This server's SimulationApp shutdown terminates the process with code
+        # zero, even while unwinding an exception. On failure, exit explicitly
+        # after persisting/flushing diagnostics; the OS releases GPU resources.
+        import os
+        os._exit(1)
     finally:
-        launcher.app.close()
+        try:
+            launcher.app.close()
+        finally:
+            # SimulationApp.close can raise SystemExit(0), hiding a pending
+            # exception. Preserve a failed status after normal Python cleanup.
+            if failed:
+                raise SystemExit(1)
 
 
 if __name__ == '__main__':

@@ -11,10 +11,32 @@ import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'scripts/tools'))
 from fanuc_scene_data import (joint_names, load_bundle, matrix_pose, portable_urdf,
-                              prepare_bundle, rpy_quaternion, sample_motion)
+                              prepare_bundle, rpy_quaternion, sample_motion, stage_import_urdf,
+                              initial_joint_positions)
 
 
 class FanucSceneTests(unittest.TestCase):
+    def test_initial_joint_config_drops_numpy_double_scalars_without_changing_angles(self):
+        values = np.linspace(-1., 1., 28, dtype=np.float64)
+        names = joint_names('left')
+        config = initial_joint_positions(names, values)
+        self.assertTrue(all(type(v) is float for v in config.values()))
+        np.testing.assert_array_equal(list(config.values()), values)
+        self.assertEqual(list(config), names)
+        with self.assertRaises(ValueError):
+            initial_joint_positions(names, values[:-1])
+
+    def test_exact_limit_initialization_has_tiny_inward_margin(self):
+        limits = {'thumb': {'lower': -.3491, 'upper': .3491}}
+        low = initial_joint_positions(['thumb'], [-.3491], limits)['thumb']
+        high = initial_joint_positions(['thumb'], [.3491], limits)['thumb']
+        self.assertGreater(low, -.3491)
+        self.assertLess(high, .3491)
+        self.assertAlmostEqual(low + .3491, 1e-5)
+        self.assertEqual(initial_joint_positions(['thumb'], [0.], limits)['thumb'], 0.)
+        with self.assertRaisesRegex(ValueError, 'genuinely outside'):
+            initial_joint_positions(['thumb'], [-.35], limits)
+
     def make_inputs(self, root):
         retarget = root / 'retarget'
         for side in ('left', 'right'):
@@ -131,6 +153,57 @@ class FanucSceneTests(unittest.TestCase):
             tree.write(source)
             with self.assertRaisesRegex(ValueError, 'baked base'):
                 portable_urdf(source, root / 'new/robot.urdf', 'left')
+
+    def test_import_staging_preserves_physics_and_bundle(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            inputs = self.make_inputs(root)
+            bundle = root / 'bundle'
+            prepare_bundle(*inputs, bundle, [0, 1, -1, 0])
+            source = bundle / 'right/robot.urdf'
+            tree = ET.parse(source)
+            visual = ET.SubElement(tree.find('link'), 'visual')
+            # Add anonymous material to a physical link, not the empty wrapper.
+            tree.find('link').remove(visual)
+            visual = ET.SubElement(tree.findall('link')[2], 'visual')
+            ET.SubElement(visual, 'material', name='')
+            tree.write(source)
+            before = source.read_bytes()
+            staged = stage_import_urdf(source, root / 'staging/robot.urdf')
+            result = ET.parse(staged)
+            self.assertIsNone(result.find("link[@name='world']"))
+            self.assertIsNone(result.find("joint[@name='base_joint']"))
+            self.assertIsNotNone(result.find("link[@name='base_link']"))
+            self.assertEqual(len(result.findall('joint')), 28)
+            self.assertTrue(all(m.get('name') for m in result.iter('material')))
+            for mesh in result.iter('mesh'):
+                self.assertTrue(Path(mesh.get('filename')).stem.startswith('mesh_'))
+                self.assertTrue((staged.parent / mesh.get('filename')).is_file())
+                self.assertEqual(mesh.get('scale'), '.001 .001 .001')
+            for old, new in zip(tree.findall('joint')[1:], result.findall('joint')):
+                self.assertEqual(ET.tostring(old), ET.tostring(new))
+            self.assertEqual(source.read_bytes(), before)
+
+    def test_dae_visual_fallback_uses_collision_origin_and_scale(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            retarget, _, _ = self.make_inputs(root)
+            source = retarget / 'assets/robots/crx5ia_sharpa_wave_left/urdf/crx5ia_sharpa_wave_left.urdf'
+            tree = ET.parse(source)
+            link = tree.findall('link')[2]
+            ET.SubElement(link.find('collision'), 'origin', xyz='1 2 3', rpy='0 0 1')
+            visual = ET.SubElement(link, 'visual')
+            ET.SubElement(visual, 'origin', xyz='9 9 9')
+            ET.SubElement(ET.SubElement(visual, 'geometry'), 'mesh', filename='absent.dae')
+            tree.write(source)
+            staged = stage_import_urdf(source, root / 'staged/robot.urdf', collision_visuals=True)
+            physical = ET.parse(staged).find("link[@name='link_0']")
+            visual = physical.find('visual')
+            self.assertEqual(visual.find('origin').get('xyz'), '1 2 3')
+            self.assertEqual(visual.find('origin').get('rpy'), '0 0 1')
+            self.assertEqual(visual.find('geometry/mesh').get('scale'), '.001 .001 .001')
+            self.assertTrue(visual.find('geometry/mesh').get('filename').endswith('.stl'))
+            self.assertEqual(physical.find('collision/origin').get('xyz'), '1 2 3')
 
 
 if __name__ == '__main__':
