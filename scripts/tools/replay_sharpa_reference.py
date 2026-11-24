@@ -79,5 +79,11 @@ def main():
 
 try:
     main()
-finally:
-    launcher.app.close()
+except BaseException:
+    # app.close() ends the process before Python prints a pending traceback.
+    import traceback
+    traceback.print_exc()
+    sys.stderr.flush()
+    sys.stdout.flush()
+    os._exit(1)
+launcher.app.close()
