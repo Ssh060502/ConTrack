@@ -1,0 +1,2 @@
+# The scene bundle records SHA256 of every file; store bytes exactly, no line-ending conversion.
+outputs/fanuc_sharpa/** -text
