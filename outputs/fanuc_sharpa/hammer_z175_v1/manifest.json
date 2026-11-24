@@ -1,0 +1,583 @@
+{
+  "schema_version": 1,
+  "bases_xyz_wxyz": {
+    "left": [
+      0.0,
+      0.0,
+      0.0,
+      1.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "right": [
+      0.03058936,
+      -0.91156264,
+      0.00873476,
+      0.7154901277692266,
+      -3.986850546679275e-05,
+      -0.007158236258448356,
+      -0.6985861687214729
+    ]
+  },
+  "table_height": -0.175,
+  "table_bounds_xy": [
+    0.18358936,
+    0.88358936,
+    -1.15578132,
+    0.24421868
+  ],
+  "table_thickness": 0.03,
+  "table_bounds_measured": false,
+  "mount_calibrated": false,
+  "frames": 357,
+  "fps": 8.571428571428571,
+  "duration_seconds": 41.53333333333333,
+  "joint_names": {
+    "left": [
+      "J1",
+      "J2",
+      "J3",
+      "J4",
+      "J5",
+      "J6",
+      "left_thumb_CMC_FE",
+      "left_thumb_CMC_AA",
+      "left_thumb_MCP_FE",
+      "left_thumb_MCP_AA",
+      "left_thumb_IP",
+      "left_index_MCP_FE",
+      "left_index_MCP_AA",
+      "left_index_PIP",
+      "left_index_DIP",
+      "left_middle_MCP_FE",
+      "left_middle_MCP_AA",
+      "left_middle_PIP",
+      "left_middle_DIP",
+      "left_ring_MCP_FE",
+      "left_ring_MCP_AA",
+      "left_ring_PIP",
+      "left_ring_DIP",
+      "left_pinky_CMC",
+      "left_pinky_MCP_FE",
+      "left_pinky_MCP_AA",
+      "left_pinky_PIP",
+      "left_pinky_DIP"
+    ],
+    "right": [
+      "J1",
+      "J2",
+      "J3",
+      "J4",
+      "J5",
+      "J6",
+      "right_thumb_CMC_FE",
+      "right_thumb_CMC_AA",
+      "right_thumb_MCP_FE",
+      "right_thumb_MCP_AA",
+      "right_thumb_IP",
+      "right_index_MCP_FE",
+      "right_index_MCP_AA",
+      "right_index_PIP",
+      "right_index_DIP",
+      "right_middle_MCP_FE",
+      "right_middle_MCP_AA",
+      "right_middle_PIP",
+      "right_middle_DIP",
+      "right_ring_MCP_FE",
+      "right_ring_MCP_AA",
+      "right_ring_PIP",
+      "right_ring_DIP",
+      "right_pinky_CMC",
+      "right_pinky_MCP_FE",
+      "right_pinky_MCP_AA",
+      "right_pinky_PIP",
+      "right_pinky_DIP"
+    ]
+  },
+  "joint_limits": {
+    "left": {
+      "J1": {
+        "lower": -3.490658503988659,
+        "upper": 3.490658503988659,
+        "effort": 160.0,
+        "velocity": 2.6179938779914944
+      },
+      "J2": {
+        "lower": -3.139847324337799,
+        "upper": 3.139847324337799,
+        "effort": 160.0,
+        "velocity": 2.6179938779914944
+      },
+      "J3": {
+        "lower": -1.1868238913561442,
+        "upper": 4.328416544945937,
+        "effort": 160.0,
+        "velocity": 3.141592653589793
+      },
+      "J4": {
+        "lower": -3.3161255787892263,
+        "upper": 3.3161255787892263,
+        "effort": 40.0,
+        "velocity": 3.9269908169872414
+      },
+      "J5": {
+        "lower": -3.139847324337799,
+        "upper": 3.139847324337799,
+        "effort": 40.0,
+        "velocity": 3.9269908169872414
+      },
+      "J6": {
+        "lower": -3.9269908169872414,
+        "upper": 3.9269908169872414,
+        "effort": 40.0,
+        "velocity": 3.9269908169872414
+      },
+      "left_thumb_CMC_FE": {
+        "lower": -0.1745,
+        "upper": 1.9199,
+        "effort": 3.3,
+        "velocity": 11.84076833
+      },
+      "left_thumb_CMC_AA": {
+        "lower": -0.3491,
+        "upper": 0.3491,
+        "effort": 3.3,
+        "velocity": 11.84076833
+      },
+      "left_thumb_MCP_FE": {
+        "lower": -0.5236,
+        "upper": 1.3963,
+        "effort": 1.864,
+        "velocity": 16.07692878
+      },
+      "left_thumb_MCP_AA": {
+        "lower": -0.3491,
+        "upper": 0.3491,
+        "effort": 1.864,
+        "velocity": 16.07692878
+      },
+      "left_thumb_IP": {
+        "lower": 0.0,
+        "upper": 1.7453,
+        "effort": 0.638,
+        "velocity": 11.61831603
+      },
+      "left_index_MCP_FE": {
+        "lower": -0.17453293,
+        "upper": 1.5708,
+        "effort": 1.864,
+        "velocity": 16.07692878
+      },
+      "left_index_MCP_AA": {
+        "lower": -0.3491,
+        "upper": 0.3491,
+        "effort": 1.864,
+        "velocity": 16.07692878
+      },
+      "left_index_PIP": {
+        "lower": 0.0,
+        "upper": 1.7453,
+        "effort": 0.638,
+        "velocity": 11.61831603
+      },
+      "left_index_DIP": {
+        "lower": 0.0,
+        "upper": 1.3963,
+        "effort": 0.189369,
+        "velocity": 14.66594768
+      },
+      "left_middle_MCP_FE": {
+        "lower": -0.17453293,
+        "upper": 1.5708,
+        "effort": 1.864,
+        "velocity": 16.07692878
+      },
+      "left_middle_MCP_AA": {
+        "lower": -0.3491,
+        "upper": 0.3491,
+        "effort": 1.864,
+        "velocity": 16.07692878
+      },
+      "left_middle_PIP": {
+        "lower": 0.0,
+        "upper": 1.7453,
+        "effort": 0.638,
+        "velocity": 11.61831603
+      },
+      "left_middle_DIP": {
+        "lower": 0.0,
+        "upper": 1.3963,
+        "effort": 0.189369,
+        "velocity": 14.66594768
+      },
+      "left_ring_MCP_FE": {
+        "lower": -0.17453293,
+        "upper": 1.5708,
+        "effort": 1.864,
+        "velocity": 16.07692878
+      },
+      "left_ring_MCP_AA": {
+        "lower": -0.3491,
+        "upper": 0.3491,
+        "effort": 1.864,
+        "velocity": 16.07692878
+      },
+      "left_ring_PIP": {
+        "lower": 0.0,
+        "upper": 1.7453,
+        "effort": 0.638,
+        "velocity": 11.61831603
+      },
+      "left_ring_DIP": {
+        "lower": 0.0,
+        "upper": 1.3963,
+        "effort": 0.189369,
+        "velocity": 14.66594768
+      },
+      "left_pinky_CMC": {
+        "lower": 0.0,
+        "upper": 0.2618,
+        "effort": 0.5285,
+        "velocity": 35.07416159
+      },
+      "left_pinky_MCP_FE": {
+        "lower": -0.17453293,
+        "upper": 1.5708,
+        "effort": 1.864,
+        "velocity": 16.07692878
+      },
+      "left_pinky_MCP_AA": {
+        "lower": -0.3491,
+        "upper": 0.3491,
+        "effort": 1.864,
+        "velocity": 16.07692878
+      },
+      "left_pinky_PIP": {
+        "lower": 0.0,
+        "upper": 1.7453,
+        "effort": 0.638,
+        "velocity": 11.61831603
+      },
+      "left_pinky_DIP": {
+        "lower": 0.0,
+        "upper": 1.3963,
+        "effort": 0.189369,
+        "velocity": 14.66594768
+      }
+    },
+    "right": {
+      "J1": {
+        "lower": -3.490658503988659,
+        "upper": 3.490658503988659,
+        "effort": 160.0,
+        "velocity": 2.6179938779914944
+      },
+      "J2": {
+        "lower": -3.139847324337799,
+        "upper": 3.139847324337799,
+        "effort": 160.0,
+        "velocity": 2.6179938779914944
+      },
+      "J3": {
+        "lower": -1.1868238913561442,
+        "upper": 4.328416544945937,
+        "effort": 160.0,
+        "velocity": 3.141592653589793
+      },
+      "J4": {
+        "lower": -3.3161255787892263,
+        "upper": 3.3161255787892263,
+        "effort": 40.0,
+        "velocity": 3.9269908169872414
+      },
+      "J5": {
+        "lower": -3.139847324337799,
+        "upper": 3.139847324337799,
+        "effort": 40.0,
+        "velocity": 3.9269908169872414
+      },
+      "J6": {
+        "lower": -3.9269908169872414,
+        "upper": 3.9269908169872414,
+        "effort": 40.0,
+        "velocity": 3.9269908169872414
+      },
+      "right_thumb_CMC_FE": {
+        "lower": -0.1745,
+        "upper": 1.9199,
+        "effort": 3.3,
+        "velocity": 11.84076833
+      },
+      "right_thumb_CMC_AA": {
+        "lower": -0.3491,
+        "upper": 0.3491,
+        "effort": 3.3,
+        "velocity": 11.84076833
+      },
+      "right_thumb_MCP_FE": {
+        "lower": -0.5236,
+        "upper": 1.3963,
+        "effort": 1.864,
+        "velocity": 16.07692878
+      },
+      "right_thumb_MCP_AA": {
+        "lower": -0.3491,
+        "upper": 0.3491,
+        "effort": 1.864,
+        "velocity": 16.07692878
+      },
+      "right_thumb_IP": {
+        "lower": 0.0,
+        "upper": 1.7453,
+        "effort": 0.638,
+        "velocity": 11.61831603
+      },
+      "right_index_MCP_FE": {
+        "lower": -0.17453293,
+        "upper": 1.5708,
+        "effort": 1.864,
+        "velocity": 16.07692878
+      },
+      "right_index_MCP_AA": {
+        "lower": -0.3491,
+        "upper": 0.3491,
+        "effort": 1.864,
+        "velocity": 16.07692878
+      },
+      "right_index_PIP": {
+        "lower": 0.0,
+        "upper": 1.7453,
+        "effort": 0.638,
+        "velocity": 11.61831603
+      },
+      "right_index_DIP": {
+        "lower": 0.0,
+        "upper": 1.3963,
+        "effort": 0.189369,
+        "velocity": 14.66594768
+      },
+      "right_middle_MCP_FE": {
+        "lower": -0.17453293,
+        "upper": 1.5708,
+        "effort": 1.864,
+        "velocity": 16.07692878
+      },
+      "right_middle_MCP_AA": {
+        "lower": -0.3491,
+        "upper": 0.3491,
+        "effort": 1.864,
+        "velocity": 16.07692878
+      },
+      "right_middle_PIP": {
+        "lower": 0.0,
+        "upper": 1.7453,
+        "effort": 0.638,
+        "velocity": 11.61831603
+      },
+      "right_middle_DIP": {
+        "lower": 0.0,
+        "upper": 1.3963,
+        "effort": 0.189369,
+        "velocity": 14.66594768
+      },
+      "right_ring_MCP_FE": {
+        "lower": -0.17453293,
+        "upper": 1.5708,
+        "effort": 1.864,
+        "velocity": 16.07692878
+      },
+      "right_ring_MCP_AA": {
+        "lower": -0.3491,
+        "upper": 0.3491,
+        "effort": 1.864,
+        "velocity": 16.07692878
+      },
+      "right_ring_PIP": {
+        "lower": 0.0,
+        "upper": 1.7453,
+        "effort": 0.638,
+        "velocity": 11.61831603
+      },
+      "right_ring_DIP": {
+        "lower": 0.0,
+        "upper": 1.3963,
+        "effort": 0.189369,
+        "velocity": 14.66594768
+      },
+      "right_pinky_CMC": {
+        "lower": 0.0,
+        "upper": 0.2618,
+        "effort": 0.5285,
+        "velocity": 35.07416159
+      },
+      "right_pinky_MCP_FE": {
+        "lower": -0.17453293,
+        "upper": 1.5708,
+        "effort": 1.864,
+        "velocity": 16.07692878
+      },
+      "right_pinky_MCP_AA": {
+        "lower": -0.3491,
+        "upper": 0.3491,
+        "effort": 1.864,
+        "velocity": 16.07692878
+      },
+      "right_pinky_PIP": {
+        "lower": 0.0,
+        "upper": 1.7453,
+        "effort": 0.638,
+        "velocity": 11.61831603
+      },
+      "right_pinky_DIP": {
+        "lower": 0.0,
+        "upper": 1.3963,
+        "effort": 0.189369,
+        "velocity": 14.66594768
+      }
+    }
+  },
+  "reference_frames": 749,
+  "reference_fps": [
+    120.0,
+    120.0
+  ],
+  "source_metadata": {
+    "scene_transform": [
+      0.1501664757728577,
+      -0.3998470796272159,
+      -0.175,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "time_scale": 7.0,
+    "source_table_z": 0.0
+  },
+  "source_sha256": {
+    "trajectory": "26dc39e7fe97fea16d071726af8f961de1098b2f30ba5212e3f9d57cfa58b5d3",
+    "reference": "a3bc93259da08d2114c2ae5a1957dd5d0828873887a29da7189cead64b08e818"
+  },
+  "source_urdf_sha256": {
+    "left": "38df9ebca1219ac7bb67f6dab10d110ff25d531391cb8ce959acfc7c2ea427f3",
+    "right": "bc22c2003bd0e549b17ce1fa6036caead0a70e081e68aa8dce8e6c7a1f75c9a3"
+  },
+  "ik_diagnostics": {
+    "left": {
+      "max_position_residual_m": 6.109686228090962e-11,
+      "max_rotation_residual_rad": 2.865820505963724e-10
+    },
+    "right": {
+      "max_position_residual_m": 7.865783406008007e-11,
+      "max_rotation_residual_rad": 4.125101562282615e-10
+    }
+  },
+  "notes": [
+    "NPZ bases take precedence over upstream launch defaults.",
+    "Object mesh comes from reference H5; object poses come from NPZ.",
+    "Recorded slowdown is preserved, not an original-speed task.",
+    "No physical calibration or grasp success is asserted."
+  ],
+  "files_sha256": {
+    "hammer_mesh.npz": "c32ba50b975fdeff5529143c56488666c0abb20e21e93dbf327911fbfd9b1388",
+    "left/meshes/01e17ed8392d99e7.stl": "01e17ed8392d99e76d1c00a849749610c3f7715f18ea12b107ba56eba3541fee",
+    "left/meshes/0e8b15c4d8426a26.stl": "0e8b15c4d8426a26cb222b8c1592f5e913c079aebdc0abaecda273b7d8ed0f3a",
+    "left/meshes/0e9ac7a8208ab247.stl": "0e9ac7a8208ab2478cdff8ae40036b93e040a05f89ae0c43ece83a62fdf15293",
+    "left/meshes/147da80c56a334d8.stl": "147da80c56a334d83b1ac882f3110b29401d5806c94b993e77e9d763bdca2b54",
+    "left/meshes/16584576da037618.stl": "16584576da037618d311cee65a7a459adeae36ae854d0c974c225ceb3c0f145a",
+    "left/meshes/18d46853975ddcc4.dae": "18d46853975ddcc40b1273ecdb38dc5a6052b2ef30114ac6a1e23449706780ae",
+    "left/meshes/1cf64807c9018e54.stl": "1cf64807c9018e548cd365d86d63842a3b20335213c8b69a89f9a82924c17ad8",
+    "left/meshes/1f0a96877af9ec35.stl": "1f0a96877af9ec35f20941ae696e9e22cedc6e341703657b0c6d0ebc982897a9",
+    "left/meshes/2243da3036b19cd3.dae": "2243da3036b19cd37f31e826abcd2a7889cf0ae941b93298a4de9e298bd2f43d",
+    "left/meshes/2847673ad531a6d1.stl": "2847673ad531a6d1fe3d12b3433d080358727def9acade9f0319c18579676b13",
+    "left/meshes/28f866c8953490d7.stl": "28f866c8953490d7030acf65c564a6b27b7249491b0f496b761b7695bf0f529a",
+    "left/meshes/3f15b81f22feec35.stl": "3f15b81f22feec350ae2f60a7c69ca36028bd580d6cf4722d4f759d401ea02f9",
+    "left/meshes/41301682f7da6d9b.stl": "41301682f7da6d9b9f16d2c9248169a8d257c3c816d4ae8df0258187d06fa54b",
+    "left/meshes/437f363ca7a40b6e.stl": "437f363ca7a40b6e9b9152ebb81db249c51de71565cdb44b7df6e2cdf0da3312",
+    "left/meshes/47f990c04f091746.stl": "47f990c04f09174666773687f9e4e1b4031dd150481c1d26719bbba874ae0709",
+    "left/meshes/5123fd1776cfc828.stl": "5123fd1776cfc82895f9f0b6ba4098522baaad9ebaaa3110ff1246775cfbd737",
+    "left/meshes/587e34505de3b4f5.stl": "587e34505de3b4f5b7131e6554e0ab92a18a3c28d250ea46eaf728c4539bf77d",
+    "left/meshes/5befe26c622b7e18.stl": "5befe26c622b7e18bfe06c9e2a8f3bb23c05c09992b5b25c234117066af856cc",
+    "left/meshes/627b9c0ec8da11a6.dae": "627b9c0ec8da11a65ce5dd182cba8caa0c885a3750e434a022f62dbf16ddcde1",
+    "left/meshes/66451fde91faa2cb.dae": "66451fde91faa2cb16cda4594e6b43a9fffcdb808c84c5cbd238e9d252ddfcfd",
+    "left/meshes/6e4434712a5c668d.stl": "6e4434712a5c668dbeda169e727629e95d4a9492fca431126543109451e2484f",
+    "left/meshes/7f4a561b611af82e.stl": "7f4a561b611af82e27bb5c8d6838d574e71e2ede42d25edf1f57c2b54ebde072",
+    "left/meshes/881e6eeeaecbf0a8.stl": "881e6eeeaecbf0a8bd6b11fa7f41a5aa139900635fe82b765586460c9a9c1580",
+    "left/meshes/88b214c5c614b4b5.stl": "88b214c5c614b4b5f0c7cf195a90825b41e20745b1b65442854b371ff065e858",
+    "left/meshes/8ac2ab2b5eaab058.stl": "8ac2ab2b5eaab0582d206a8c6d18d63424e735a515a9c8c3b7b1d7536dc1ef25",
+    "left/meshes/8e85468a09de21a6.dae": "8e85468a09de21a660e53938d068229c5a87715a4471c704bdb3c440dbeffb87",
+    "left/meshes/948f18b82c395913.stl": "948f18b82c3959135b60f8c3107c0270d3422df79679e63cc5fd6607556ab3a1",
+    "left/meshes/9c862ce10c4958ef.stl": "9c862ce10c4958ef967ed46fed837fafb20dd2c84a23ef9ee4f793576ef1fb93",
+    "left/meshes/b28a529aadb4a084.stl": "b28a529aadb4a084912f3697b117ba43fd13c6f3136e48166b5dd1616d9f3eef",
+    "left/meshes/bde2ae3b78622326.dae": "bde2ae3b786223261ad0b6ee955ac988ae8cdccdc96e47ca9a672bf2059c8593",
+    "left/meshes/c5051bf5e1ee87cd.stl": "c5051bf5e1ee87cdecc061326d4413b9e6232fe07777e5b3437f4a459a9280bc",
+    "left/meshes/c92f932c0de2fe0a.stl": "c92f932c0de2fe0af4fa47c08b03181c2d70050a813577f81b5534929b4e9ff4",
+    "left/meshes/ce978dda8bbfb8ad.stl": "ce978dda8bbfb8ad59cb2f5decf647882d1be67fd758329d40c7c4cefacbf771",
+    "left/meshes/cfb8c21642fbc853.stl": "cfb8c21642fbc8535ab35ec4e29f90784fab198895f8f992275adaa15852b595",
+    "left/meshes/d49c63f5adeca6b1.stl": "d49c63f5adeca6b1f6e329d7e541b09fdc48259d88aec3ff4c5ac371648cb881",
+    "left/meshes/da4fb47f6126ca3b.stl": "da4fb47f6126ca3b653689aea6d958e08dde7d0c232a3043773e18f447aa121a",
+    "left/meshes/df2dcfc770ecf81e.stl": "df2dcfc770ecf81e893a65d28994ff608556156f4e9a0b447086ab6de485cd75",
+    "left/meshes/f7a7192ae246a6b8.stl": "f7a7192ae246a6b88f9096332216013c8f6be507ee0dc9bfd4444518453b0c13",
+    "left/meshes/f9ce62e3ee389a7d.dae": "f9ce62e3ee389a7d2e0d979679f3da4c036ba54bd165f9b367be73cfd1907cbc",
+    "left/robot.urdf": "4aef4f740e36159c35fa1ebe7ef2ac76d4ecd036cd2684825bb2a5e92176ec55",
+    "motion.npz": "c202a3efbc83e97f979ec8bb3e91f585ef45ad40c34ba293da49fcc4bd4c5e56",
+    "provenance/crx5ia_leap_paxini/manifest.yaml": "16c3dc398eace1b0fafa5b0113e6587ccbda4b19ed1e6083f4edc373fceecdbd",
+    "provenance/crx5ia_leap_paxini/provenance/Apache-2.0.txt": "9bf4e882bdd75e8d10fc788c53d0a787ef0f59cead1fe1f0878c240896fc8610",
+    "provenance/crx5ia_leap_paxini/provenance/FANUC-README.md": "8f6a8a5d199aae40f1eb72522213b842fef2ae5a6643b084df6f6564d07de89b",
+    "provenance/crx5ia_leap_paxini/README.md": "2b2b5d418ea792a8700ec832396dda8affd6e2269d41639e08d5844015360ca1",
+    "provenance/sharpa_wave_left/Apache-2.0.txt": "3ddf9be5c28fe27dad143a5dc76eea25222ad1dd68934a047064e56ed2fa40c5",
+    "provenance/sharpa_wave_left/LICENSE.txt": "f6a348fca3d77ddf60e66a3288b060e09b12afdebeabc6fc490b272ecfa10e43",
+    "provenance/sharpa_wave_left/manifest.yaml": "246f2ec1acc8deac306823fc9f510b2ba1142b2b36556f82fdd3b7b0c8440eec",
+    "provenance/sharpa_wave_left/NOTICE.txt": "bee17b99ba47b327197e75f2d62e3fadbff246f6e4b84e15550afe12fbd2f3d6",
+    "provenance/sharpa_wave_left/README.md": "ca0a45d606f136c6f29fe166878ed12e6f88932773da6c7566864a11be5f8925",
+    "provenance/sharpa_wave_left/retargeting_manifest.yaml": "ab47a9a256cb3d7a28e957c010c737e760ca60e19b9aa4f1d4925b7d7dd89223",
+    "provenance/sharpa_wave_left/SHA256SUMS.txt": "db8cdaa426a7bce8c5edab68a6cb8801445ddec7f745e7b60cb2f588909160b9",
+    "provenance/sharpa_wave_right/Apache-2.0.txt": "3ddf9be5c28fe27dad143a5dc76eea25222ad1dd68934a047064e56ed2fa40c5",
+    "provenance/sharpa_wave_right/LICENSE.txt": "f6a348fca3d77ddf60e66a3288b060e09b12afdebeabc6fc490b272ecfa10e43",
+    "provenance/sharpa_wave_right/manifest.yaml": "5304b0ca07d628d5f8d5b9518073e071ba2f5407bcaa1d246b83148e1b57e3b7",
+    "provenance/sharpa_wave_right/NOTICE.txt": "bee17b99ba47b327197e75f2d62e3fadbff246f6e4b84e15550afe12fbd2f3d6",
+    "provenance/sharpa_wave_right/README.md": "3c54f0c9bea16db85eaecaeda69b97c798e19d89416593685f4c2bbcc56d49f6",
+    "provenance/sharpa_wave_right/retargeting_manifest.yaml": "20b89aa59c275d9aeff2f40ff214edd8bb3189b95bfd56cee7fa18a180371deb",
+    "provenance/sharpa_wave_right/SHA256SUMS.txt": "fcc64cd782e634f866aa7543611f27e0d3c01fce1d1723e19e6bc1fa639d90c2",
+    "right/meshes/1024905f9af3ad14.stl": "1024905f9af3ad14160ce55d2e1d98fb7028274f7b267bee8b057754eb165faa",
+    "right/meshes/147da80c56a334d8.stl": "147da80c56a334d83b1ac882f3110b29401d5806c94b993e77e9d763bdca2b54",
+    "right/meshes/18d46853975ddcc4.dae": "18d46853975ddcc40b1273ecdb38dc5a6052b2ef30114ac6a1e23449706780ae",
+    "right/meshes/1cf64807c9018e54.stl": "1cf64807c9018e548cd365d86d63842a3b20335213c8b69a89f9a82924c17ad8",
+    "right/meshes/1f8207aff0f2f6ca.stl": "1f8207aff0f2f6ca2f1de1a8bbbbcd4183300bc3778d55821c2aae9b490b7dd3",
+    "right/meshes/2243da3036b19cd3.dae": "2243da3036b19cd37f31e826abcd2a7889cf0ae941b93298a4de9e298bd2f43d",
+    "right/meshes/28f866c8953490d7.stl": "28f866c8953490d7030acf65c564a6b27b7249491b0f496b761b7695bf0f529a",
+    "right/meshes/30d656738130093b.stl": "30d656738130093b7023100c73fac065a173aaba2e4314034c050c984005d634",
+    "right/meshes/350f66d656fef760.stl": "350f66d656fef760a7f4f0c4a026951e9d831ca65a9c5e4e34825b694ed6b11a",
+    "right/meshes/437f363ca7a40b6e.stl": "437f363ca7a40b6e9b9152ebb81db249c51de71565cdb44b7df6e2cdf0da3312",
+    "right/meshes/5123fd1776cfc828.stl": "5123fd1776cfc82895f9f0b6ba4098522baaad9ebaaa3110ff1246775cfbd737",
+    "right/meshes/5ae38bab4f573bd1.stl": "5ae38bab4f573bd147e5a5e231eb399e2396575884cd36e574235258a048e53b",
+    "right/meshes/5befe26c622b7e18.stl": "5befe26c622b7e18bfe06c9e2a8f3bb23c05c09992b5b25c234117066af856cc",
+    "right/meshes/627b9c0ec8da11a6.dae": "627b9c0ec8da11a65ce5dd182cba8caa0c885a3750e434a022f62dbf16ddcde1",
+    "right/meshes/66451fde91faa2cb.dae": "66451fde91faa2cb16cda4594e6b43a9fffcdb808c84c5cbd238e9d252ddfcfd",
+    "right/meshes/795b35f943c42723.stl": "795b35f943c4272314d5e72497aaea2ef998458b0259a6609577d3694aeff869",
+    "right/meshes/81f4bf8c39117b7b.stl": "81f4bf8c39117b7bf7a4f0fdeb577948056139a84927adc55e9b049434a41a3b",
+    "right/meshes/88b214c5c614b4b5.stl": "88b214c5c614b4b5f0c7cf195a90825b41e20745b1b65442854b371ff065e858",
+    "right/meshes/8ac2ab2b5eaab058.stl": "8ac2ab2b5eaab0582d206a8c6d18d63424e735a515a9c8c3b7b1d7536dc1ef25",
+    "right/meshes/8c52941db271e933.stl": "8c52941db271e9331f0b32ec581c078af7f8cb372fb97f021d5b1dec2d2426ae",
+    "right/meshes/8e85468a09de21a6.dae": "8e85468a09de21a660e53938d068229c5a87715a4471c704bdb3c440dbeffb87",
+    "right/meshes/9234e513974246de.stl": "9234e513974246de38de76ce5f2a48078ebb014e890083219e2bd93caef55b60",
+    "right/meshes/948f18b82c395913.stl": "948f18b82c3959135b60f8c3107c0270d3422df79679e63cc5fd6607556ab3a1",
+    "right/meshes/98ad7e6e990f6185.stl": "98ad7e6e990f61857d6ad28860bba7e0dcba78761a513d60fdc527e9d56bbe8e",
+    "right/meshes/aa8b0ac6b6a77690.stl": "aa8b0ac6b6a7769033daa149416035712b23b79af0a7ddeb83d62142f8ff8a14",
+    "right/meshes/af867d754ae0f3d5.stl": "af867d754ae0f3d5c38610f72cf4699789c82bb0391c2a406e6924f76e850ec6",
+    "right/meshes/b28a529aadb4a084.stl": "b28a529aadb4a084912f3697b117ba43fd13c6f3136e48166b5dd1616d9f3eef",
+    "right/meshes/bde2ae3b78622326.dae": "bde2ae3b786223261ad0b6ee955ac988ae8cdccdc96e47ca9a672bf2059c8593",
+    "right/meshes/c5051bf5e1ee87cd.stl": "c5051bf5e1ee87cdecc061326d4413b9e6232fe07777e5b3437f4a459a9280bc",
+    "right/meshes/c92f932c0de2fe0a.stl": "c92f932c0de2fe0af4fa47c08b03181c2d70050a813577f81b5534929b4e9ff4",
+    "right/meshes/ce978dda8bbfb8ad.stl": "ce978dda8bbfb8ad59cb2f5decf647882d1be67fd758329d40c7c4cefacbf771",
+    "right/meshes/cfb8c21642fbc853.stl": "cfb8c21642fbc8535ab35ec4e29f90784fab198895f8f992275adaa15852b595",
+    "right/meshes/db4e895306f51b7c.stl": "db4e895306f51b7cc369b01b705d276b6d69c773033d7e01c8bafbf2d1ecd7e8",
+    "right/meshes/deb6d97eb2d7223d.stl": "deb6d97eb2d7223d72c23ebb32f874644dcf78848389f14dcabe3016aae5dd6c",
+    "right/meshes/df2dcfc770ecf81e.stl": "df2dcfc770ecf81e893a65d28994ff608556156f4e9a0b447086ab6de485cd75",
+    "right/meshes/ebaf499965a51e4b.stl": "ebaf499965a51e4b539b7ec5481efbddaf2003b69d0e5e72425a430cecd187b0",
+    "right/meshes/ec48548aaafa6589.stl": "ec48548aaafa6589112e9b609ed58f1b5e7ec0157ca15e0e4e8c93bff706a9d0",
+    "right/meshes/ed975b59e2569759.stl": "ed975b59e2569759ff28a397dab71d84667161d3b90b41d625bc5e1f5ac6536c",
+    "right/meshes/f9ce62e3ee389a7d.dae": "f9ce62e3ee389a7d2e0d979679f3da4c036ba54bd165f9b367be73cfd1907cbc",
+    "right/robot.urdf": "ee9438991fdb0f9abc154b7b4e81aa35c6f2301ff848417c3f648460ab8dfa0a"
+  }
+}

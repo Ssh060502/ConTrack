@@ -1,0 +1,89 @@
+{
+  "urdf": "crx_sharpa.urdf",
+  "root_link": "crx_base",
+  "bases_xyz_rpy": {
+    "left": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "right": [
+      0.03058936,
+      -0.91156264,
+      0.00873476,
+      0.009944929999999996,
+      -0.01029918,
+      -1.5469405499999997
+    ]
+  },
+  "joint_names": {
+    "left": [
+      "left_J1",
+      "left_J2",
+      "left_J3",
+      "left_J4",
+      "left_J5",
+      "left_J6",
+      "left_thumb_CMC_FE",
+      "left_thumb_CMC_AA",
+      "left_thumb_MCP_FE",
+      "left_thumb_MCP_AA",
+      "left_thumb_IP",
+      "left_index_MCP_FE",
+      "left_index_MCP_AA",
+      "left_index_PIP",
+      "left_index_DIP",
+      "left_middle_MCP_FE",
+      "left_middle_MCP_AA",
+      "left_middle_PIP",
+      "left_middle_DIP",
+      "left_ring_MCP_FE",
+      "left_ring_MCP_AA",
+      "left_ring_PIP",
+      "left_ring_DIP",
+      "left_pinky_CMC",
+      "left_pinky_MCP_FE",
+      "left_pinky_MCP_AA",
+      "left_pinky_PIP",
+      "left_pinky_DIP"
+    ],
+    "right": [
+      "right_J1",
+      "right_J2",
+      "right_J3",
+      "right_J4",
+      "right_J5",
+      "right_J6",
+      "right_thumb_CMC_FE",
+      "right_thumb_CMC_AA",
+      "right_thumb_MCP_FE",
+      "right_thumb_MCP_AA",
+      "right_thumb_IP",
+      "right_index_MCP_FE",
+      "right_index_MCP_AA",
+      "right_index_PIP",
+      "right_index_DIP",
+      "right_middle_MCP_FE",
+      "right_middle_MCP_AA",
+      "right_middle_PIP",
+      "right_middle_DIP",
+      "right_ring_MCP_FE",
+      "right_ring_MCP_AA",
+      "right_ring_PIP",
+      "right_ring_DIP",
+      "right_pinky_CMC",
+      "right_pinky_MCP_FE",
+      "right_pinky_MCP_AA",
+      "right_pinky_PIP",
+      "right_pinky_DIP"
+    ]
+  },
+  "source_bundle_sha256": {
+    "left": "38df9ebca1219ac7bb67f6dab10d110ff25d531391cb8ce959acfc7c2ea427f3",
+    "right": "bc22c2003bd0e549b17ce1fa6036caead0a70e081e68aa8dce8e6c7a1f75c9a3"
+  },
+  "right_base_verified": false
+}

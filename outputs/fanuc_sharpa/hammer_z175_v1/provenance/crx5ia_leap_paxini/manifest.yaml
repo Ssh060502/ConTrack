@@ -1,0 +1,31 @@
+schema_version: 1
+robot: crx5ia_leap_paxini
+format: repository_robot_assets
+entrypoints:
+  urdf: urdf/crx5ia_leap_paxini.urdf
+source:
+  repository: https://github.com/FANUC-CORPORATION/fanuc_description
+  commit: fb40c9803a826ba68c7c8e28ba904a25efa7fcd2
+  sha256:
+    fanuc_crx_description/meshes/crx5ia/visual/base.dae: 5cab2c0f22e66330cdc5afc5a8deb12f39543cfda91830923dd70aba4754b63f
+    fanuc_crx_description/meshes/crx5ia/collision/base.stl: 28f866c8953490d7030acf65c564a6b27b7249491b0f496b761b7695bf0f529a
+    fanuc_crx_description/meshes/crx5ia/visual/j1.dae: a36edd727515121bd795d2fe880320af768ef48b0b7b00f1a0d122fdb2103ba6
+    fanuc_crx_description/meshes/crx5ia/collision/j1.stl: c92f932c0de2fe0af4fa47c08b03181c2d70050a813577f81b5534929b4e9ff4
+    fanuc_crx_description/meshes/crx5ia/visual/j2.dae: fa4fe8cd02f931f4458433a0b3083418c3b91ccc1d72e2c8342e5ab1f4cf5a1e
+    fanuc_crx_description/meshes/crx5ia/collision/j2.stl: cfb8c21642fbc8535ab35ec4e29f90784fab198895f8f992275adaa15852b595
+    fanuc_crx_description/meshes/crx5ia/visual/j3.dae: 0a553a1e17381f22bda11fcfd1a595af8f13b3e12aa6daa91bffb009ad37edf7
+    fanuc_crx_description/meshes/crx5ia/collision/j3.stl: 5befe26c622b7e18bfe06c9e2a8f3bb23c05c09992b5b25c234117066af856cc
+    fanuc_crx_description/meshes/crx5ia/visual/j4.dae: 61acb84ba56cf28049121ec3555d2b496a6dbebb2ae77787ab164914ac3b5833
+    fanuc_crx_description/meshes/crx5ia/collision/j4.stl: 948f18b82c3959135b60f8c3107c0270d3422df79679e63cc5fd6607556ab3a1
+    fanuc_crx_description/meshes/crx5ia/visual/j5.dae: fd5c5cbe8387a514e0099c92657b43ef324c97dbc7afa097eb45d01f7d9357dc
+    fanuc_crx_description/meshes/crx5ia/collision/j5.stl: 8ac2ab2b5eaab0582d206a8c6d18d63424e735a515a9c8c3b7b1d7536dc1ef25
+    fanuc_crx_description/meshes/crx5ia/visual/j6.dae: eeec7df2aaa0824c5afc65964728d2702a9e477a2e0792d91b5d23808e88b39e
+    fanuc_crx_description/meshes/crx5ia/collision/j6.stl: 1cf64807c9018e548cd365d86d63842a3b20335213c8b69a89f9a82924c17ad8
+    fanuc_crx_description/urdf/crx5ia_urdf_macro.xacro: 1ca7d43b3f31919a71da4670c64d474dee3056db62f6963220c99b6019cc2f5c
+    fanuc_crx_description/package.xml: e016d38aad147c7953838f1bc3ca0ba5b143e22a3cc6319f441aa3535363d045
+    LICENSES/Apache-2.0.txt: 074e6e32c86a4c0ef8b3ed25b721ca23aca83df277cd88106ef7177c354615ff
+    README.md: c6bf9b06c9e49780787ea57539e85a79ea5230a448ffcf83640e4f0634dcacf3
+hand_source:
+  path: assets/robots/panda_leap_paxini/urdf/panda_leap_paxini.urdf
+  sha256: 702a9717a27b760b1fb29fdfd2b37e985cfb75a95d7ec0ed8c89d82db94f3be0
+generated_urdf_sha256: 73b3224a7a1e5564ae22a14d88aa0ca71bef9251b548733d44fc9e6c126eb0fe

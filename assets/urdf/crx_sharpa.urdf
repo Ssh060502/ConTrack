@@ -1,0 +1,2240 @@
+<?xml version='1.0' encoding='utf-8'?>
+<robot name="crx5ia_sharpa_wave_dual">
+  <link name="crx_base" />
+  <joint name="left_base_mount" type="fixed">
+    <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+    <parent link="crx_base" />
+    <child link="left_base_link" />
+  </joint>
+  <link name="left_ee_mount" />
+  <link name="left_base_link">
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_627b9c0ec8da11a6.dae" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_28f866c8953490d7.stl" scale="0.001 0.001 0.001" />
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="2.695" />
+      <origin xyz="-0.02329 -0.00113 0.04668" />
+      <inertia ixx="0.004082061" ixy="0.000281666" ixz="0.001055913" iyy="0.008721822" iyz="4.52295E-05" izz="0.009813918" />
+    </inertial>
+  </link>
+  <link name="left_J1_link">
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 -0.185" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_2243da3036b19cd3.dae" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin rpy="0 0 -1.5707963267948966" xyz="0 0 -0.185" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_c92f932c0de2fe0a.stl" scale="0.001 0.001 0.001" />
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="5.173" />
+      <origin xyz="-0.00223 -0.04084 -0.03" />
+      <inertia ixx="0.027098156" ixy="-0.000166078" ixz="-0.000127776" iyy="0.015731396" iyz="-0.005631899" izz="0.0195838" />
+    </inertial>
+  </link>
+  <link name="left_J2_link">
+    <visual>
+      <origin rpy="0 0 0" xyz="-0.0 0 -0.185" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_18d46853975ddcc4.dae" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin rpy="0 0 -1.5707963267948966" xyz="-0.0 0 -0.185" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_cfb8c21642fbc853.stl" scale="0.001 0.001 0.001" />
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="5.014" />
+      <origin xyz="0.00013 -0.14378 0.18566" />
+      <inertia ixx="0.183168026" ixy="-3.67741E-05" ixz="0.000192371" iyy="0.178671177" iyz="0.01360861" izz="0.013395386" />
+    </inertial>
+  </link>
+  <link name="left_J3_link">
+    <visual>
+      <origin rpy="0 0 0" xyz="-0.0 0 -0.595" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_8e85468a09de21a6.dae" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin rpy="0 0 -1.5707963267948966" xyz="-0.0 0 -0.595" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_5befe26c622b7e18.stl" scale="0.001 0.001 0.001" />
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="3.133" />
+      <origin xyz="0.0303 -0.01286 -0.0002" />
+      <inertia ixx="0.005769799" ixy="0.001344252" ixz="1.14634E-05" iyy="0.008568956" iyz="1.8629E-06" izz="0.009083218" />
+    </inertial>
+  </link>
+  <link name="left_J4_link">
+    <visual>
+      <origin rpy="0 0 0" xyz="-0.0 0 -0.595" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_f9ce62e3ee389a7d.dae" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin rpy="0 0 -1.5707963267948966" xyz="-0.0 0 -0.595" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_948f18b82c395913.stl" scale="0.001 0.001 0.001" />
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="3.508" />
+      <origin xyz="0.28287 0.00109 0.00019" />
+      <inertia ixx="0.003276324" ixy="-0.00164576" ixz="-1.35414E-05" iyy="0.053727933" iyz="-4.1252E-06" izz="0.053791595" />
+    </inertial>
+  </link>
+  <link name="left_J5_link">
+    <visual>
+      <origin rpy="0 0 0" xyz="-0.43 0 -0.595" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_66451fde91faa2cb.dae" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin rpy="0 0 -1.5707963267948966" xyz="-0.43 0 -0.595" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_8ac2ab2b5eaab058.stl" scale="0.001 0.001 0.001" />
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="2.434" />
+      <origin xyz="0.01442 -0.09491 0.00164" />
+      <inertia ixx="0.006167974" ixy="-0.001284188" ixz="-2.28931E-05" iyy="0.003922645" iyz="-0.00029073" izz="0.007292078" />
+    </inertial>
+  </link>
+  <link name="left_J6_link">
+    <visual>
+      <origin rpy="0 0 0" xyz="-0.43 0.13 -0.595" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_bde2ae3b78622326.dae" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_1cf64807c9018e54.stl" scale="0.001 0.001 0.001" />
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="1.272" />
+      <origin xyz="0.10028 0.00052 0.00002" />
+      <inertia ixx="0.00143989" ixy="1.06324E-05" ixz="-7.92E-08" iyy="0.001354656" iyz="-2.602E-07" izz="0.001399779" />
+    </inertial>
+  </link>
+  <joint name="left_J1" type="revolute">
+    <origin rpy="0 0 0" xyz="0 0 0.185" />
+    <parent link="left_base_link" />
+    <child link="left_J1_link" />
+    <axis xyz="0 0 1" />
+    <limit effort="160" lower="-3.490658503988659" upper="3.490658503988659" velocity="2.6179938779914944" />
+  </joint>
+  <joint name="left_J2" type="revolute">
+    <origin rpy="0 0 0" xyz="0.0 0 0" />
+    <parent link="left_J1_link" />
+    <child link="left_J2_link" />
+    <axis xyz="0 1 0" />
+    <limit effort="160" lower="-3.139847324337799" upper="3.139847324337799" velocity="2.6179938779914944" />
+  </joint>
+  <joint name="left_J3" type="revolute">
+    <origin rpy="0 0 0" xyz="0 0 0.41" />
+    <parent link="left_J2_link" />
+    <child link="left_J3_link" />
+    <axis xyz="0 -1 0" />
+    <limit effort="160" lower="-1.1868238913561442" upper="4.328416544945937" velocity="3.141592653589793" />
+  </joint>
+  <joint name="left_J4" type="revolute">
+    <origin rpy="0 0 0" xyz="0 0 0.0" />
+    <parent link="left_J3_link" />
+    <child link="left_J4_link" />
+    <axis xyz="-1 0 0" />
+    <limit effort="40" lower="-3.3161255787892263" upper="3.3161255787892263" velocity="3.9269908169872414" />
+  </joint>
+  <joint name="left_J5" type="revolute">
+    <origin rpy="0 0 0" xyz="0.43 0 0" />
+    <parent link="left_J4_link" />
+    <child link="left_J5_link" />
+    <axis xyz="0 -1 0" />
+    <limit effort="40" lower="-3.139847324337799" upper="3.139847324337799" velocity="3.9269908169872414" />
+  </joint>
+  <joint name="left_J6" type="revolute">
+    <origin rpy="0 0 0" xyz="0 -0.13 0" />
+    <parent link="left_J5_link" />
+    <child link="left_J6_link" />
+    <axis xyz="-1 0 0" />
+    <limit effort="40" lower="-3.9269908169872414" upper="3.9269908169872414" velocity="3.9269908169872414" />
+  </joint>
+  <link name="left_wbase" />
+  <joint name="left_base_link_wbase" type="fixed">
+    <origin rpy="0 0 0" xyz="0 0 0.185" />
+    <parent link="left_base_link" />
+    <child link="left_wbase" />
+  </joint>
+  <link name="left_flange" />
+  <joint name="left_J6_flange" type="fixed">
+    <origin rpy="0 0 0" xyz="0.145 0 0" />
+    <parent link="left_J6_link" />
+    <child link="left_flange" />
+  </joint>
+  <link name="left_fanuc_flange" />
+  <joint name="left_flange_fanuc_flange" type="fixed">
+    <origin rpy="3.141592653589793 -1.5707963267948966 0.0" xyz="0 0 0" />
+    <parent link="left_flange" />
+    <child link="left_fanuc_flange" />
+  </joint>
+  <joint name="left_child_joint" type="fixed">
+    <origin rpy="0 0 0" xyz="0 0 0" />
+    <parent link="left_flange" />
+    <child link="left_ee_mount" />
+  </joint>
+  <link name="left_hand_flange">
+    <inertial>
+      <origin xyz="4.2E-3 -0.2E-4 3.6E-3" rpy="0 0 0" />
+      <mass value="0.016" />
+      <inertia ixx="5.924E-6" ixy="3.55E-10" ixz="4.4E-8" iyy="4.22E-6" iyz="7.28E-10" izz="9.97E-6" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_c5051bf5e1ee87cd.stl" />
+      </geometry>
+      <material name="left_hand_flange_material_0">
+        <color rgba="0.79216 0.81961 0.93333 1" />
+      </material>
+    </visual>
+  </link>
+  <joint name="left_hand_flange_fix_joint" type="fixed">
+    <origin xyz="0 0 0.0005" rpy="0 0 0" />
+    <parent link="left_hand_flange" />
+    <child link="left_hand_wrist" />
+    <axis xyz="0 0 0" />
+  </joint>
+  <link name="left_hand_wrist">
+    <inertial>
+      <origin xyz="-2.34E-3 2.2E-4 1.5E-2" rpy="0 0 0" />
+      <mass value="0.0505" />
+      <inertia ixx="1.25E-5" ixy="7.33E-9" ixz="5.4E-8" iyy="1.13E-5" iyz="1.01E-8" izz="1.64E-5" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_ce978dda8bbfb8ad.stl" />
+      </geometry>
+      <material name="left_hand_wrist_material_0">
+        <color rgba="0.79216 0.81961 0.93333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_147da80c56a334d8.stl" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="left_hand_wrist_fix_joint" type="fixed">
+    <origin xyz="0 0 0.029" rpy="0 0 0" />
+    <parent link="left_hand_wrist" />
+    <child link="left_hand_C_MC" />
+    <axis xyz="0 0 0" />
+  </joint>
+  <link name="left_hand_C_MC">
+    <inertial>
+      <origin xyz="-0.00216 -0.00536 0.04011" rpy="0 0 0" />
+      <mass value="0.6506" />
+      <inertia ixx="0.000674245" ixy="-2.498E-06" ixz="-7.348E-06" iyy="0.000793354" iyz="1.05749E-04" izz="0.000294753" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_41301682f7da6d9b.stl" />
+      </geometry>
+      <material name="left_hand_C_MC_material_0">
+        <color rgba="0.79216 0.81961 0.93333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_01e17ed8392d99e7.stl" />
+      </geometry>
+    </collision>
+  </link>
+  <link name="left_thumb_CMC_VL">
+    <inertial>
+      <origin xyz="-6.5E-4 -2E-4 0" rpy="0 0 0" />
+      <mass value="2.5E-03" />
+      <inertia ixx="2.08E-7" ixy="-1.853E-8" ixz="0" iyy="1.39E-7" iyz="0" izz="2.60E-7" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_9c862ce10c4958ef.stl" />
+      </geometry>
+      <material name="left_thumb_CMC_VL_material_0">
+        <color rgba="0.79216 0.81961 0.93333 1" />
+      </material>
+    </visual>
+  </link>
+  <joint name="left_thumb_CMC_FE" type="revolute">
+    <origin xyz="0.01 -0.026 0.0214" rpy="0 0 -1.5708" />
+    <parent link="left_hand_C_MC" />
+    <child link="left_thumb_CMC_VL" />
+    <axis xyz="0 0 1" />
+    <limit lower="-0.1745" upper="1.9199" effort="3.3" velocity="11.84076833" />
+  </joint>
+  <link name="left_thumb_MC">
+    <inertial>
+      <origin xyz="0.03643 -0.01024 -0.00517" rpy="0 0 0" />
+      <mass value="0.13587" />
+      <inertia ixx="1.9220E-05" ixy="-1.981E-08" ixz="-5.1687E-07" iyy="4.3621E-05" iyz="1.534E-06" izz="4.6191E-05" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_da4fb47f6126ca3b.stl" />
+      </geometry>
+      <material name="left_thumb_MC_material_0">
+        <color rgba="0.79216 0.81961 0.93333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_3f15b81f22feec35.stl" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="left_thumb_CMC_AA" type="revolute">
+    <origin xyz="0 -0.005 0" rpy="1.5708 -0.7854 0" />
+    <parent link="left_thumb_CMC_VL" />
+    <child link="left_thumb_MC" />
+    <axis xyz="0 0 1" />
+    <limit lower="-0.3491" upper="0.3491" effort="3.3" velocity="11.84076833" />
+  </joint>
+  <link name="left_thumb_MCP_VL">
+    <inertial>
+      <origin xyz="-1.29E-09 1.1E-10 0.00" rpy="0 0 0" />
+      <mass value="8E-5" />
+      <inertia ixx="6.4E-08" ixy="1.61E-09" ixz="0" iyy="3.8E-08" iyz="0" izz="7.9E-08" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_47f990c04f091746.stl" />
+      </geometry>
+      <material name="left_thumb_MCP_VL_material_0">
+        <color rgba="0.79216 0.81961 0.93333 1" />
+      </material>
+    </visual>
+  </link>
+  <joint name="left_thumb_MCP_FE" type="revolute">
+    <origin xyz="0.065 -0.006 -0.010392" rpy="-0.5236 0 0" />
+    <parent link="left_thumb_MC" />
+    <child link="left_thumb_MCP_VL" />
+    <axis xyz="0 0 1" />
+    <limit lower="-0.5236" upper="1.3963" effort="1.864" velocity="16.07692878" />
+  </joint>
+  <link name="left_thumb_PP">
+    <inertial>
+      <origin xyz="0.021256 -0.00095 0.00092" rpy="0 0 0" />
+      <mass value="0.03078" />
+      <inertia ixx="1.255E-06" ixy="-4.00E-07" ixz="4.267E-08" iyy="6.047E-06" iyz="-2.004E-08" izz="5.915E-06" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_7f4a561b611af82e.stl" />
+      </geometry>
+      <material name="left_thumb_PP_material_0">
+        <color rgba="0.79216 0.81961 0.93333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_2847673ad531a6d1.stl" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="left_thumb_MCP_AA" type="revolute">
+    <origin xyz="0 0 0" rpy="1.5708 0 0" />
+    <parent link="left_thumb_MCP_VL" />
+    <child link="left_thumb_PP" />
+    <axis xyz="0 0 1" />
+    <limit lower="-0.3491" upper="0.3491" effort="1.864" velocity="16.07692878" />
+  </joint>
+  <link name="left_thumb_DP">
+    <inertial>
+      <origin xyz="0.00832 -0.00180 -0.00101" rpy="0 0 0" />
+      <mass value="0.00988" />
+      <inertia ixx="3.1462E-07" ixy="-1.026E-07" ixz="7.094E-08" iyy="1.038E-06" iyz="-1.40E-08" izz="1.05884E-06" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_16584576da037618.stl" />
+      </geometry>
+      <material name="left_thumb_DP_material_0">
+        <color rgba="0.79216 0.81961 0.93333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_df2dcfc770ecf81e.stl" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="left_thumb_IP" type="revolute">
+    <origin xyz="0.039 0 0" rpy="-1.5708 0 0" />
+    <parent link="left_thumb_PP" />
+    <child link="left_thumb_DP" />
+    <axis xyz="0 0 1" />
+    <limit lower="0" upper="1.7453" effort="0.638" velocity="11.61831603" />
+  </joint>
+  <link name="left_thumb_elastomer">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="1E-4" />
+      <inertia ixx="1E-10" ixy="0" ixz="0" iyy="1E-10" iyz="0" izz="1E-10" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_437f363ca7a40b6e.stl" />
+      </geometry>
+      <material name="left_thumb_elastomer_material_0">
+        <color rgba="0.2 1 0.2 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_437f363ca7a40b6e.stl" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="left_thumb_elastomer_fix_joint" type="fixed">
+    <origin xyz="0 0 0" rpy="1.5707963267949 -1.5707963267949 0" />
+    <parent link="left_thumb_DP" />
+    <child link="left_thumb_elastomer" />
+    <axis xyz="0 0 0" />
+  </joint>
+  <link name="left_thumb_fingertip">
+    <inertial>
+      <origin xyz="0.0 0.0 0.0" rpy="0 0 0" />
+      <mass value="1.0E-06" />
+      <inertia ixx="2.0E-12" ixy="0" ixz="0" iyy="2.0E-12" iyz="0" izz="2.0E-12" />
+    </inertial>
+  </link>
+  <joint name="left_thumb_fingertip_fix_joint" type="fixed">
+    <origin xyz="0 -0.0276109346321216 0" rpy="1.5707963267949 1.5707963267949 0" />
+    <parent link="left_thumb_elastomer" />
+    <child link="left_thumb_fingertip" />
+    <axis xyz="0 0 0" />
+  </joint>
+  <link name="left_index_MCP_VL">
+    <inertial>
+      <origin xyz="-9.2E-03 -1.3E-03 0" rpy="0 0 0" />
+      <mass value="2.21E-03" />
+      <inertia ixx="1.77E-07" ixy="5.4E-09" ixz="0" iyy="1.104E-07" iyz="0" izz="2.23E-07" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_0e8b15c4d8426a26.stl" />
+      </geometry>
+      <material name="left_index_MCP_VL_material_0">
+        <color rgba="0.79216 0.81961 0.93333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_587e34505de3b4f5.stl" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="left_index_MCP_FE" type="revolute">
+    <origin xyz="0.001 -0.0303 0.0959" rpy="0 -1.5708 -1.5708" />
+    <parent link="left_hand_C_MC" />
+    <child link="left_index_MCP_VL" />
+    <axis xyz="0 0 1" />
+    <limit lower="-0.17453293" upper="1.5708" effort="1.864" velocity="16.07692878" />
+  </joint>
+  <link name="left_index_PP">
+    <inertial>
+      <origin xyz="0.0270 -5.5E-4 -6.8E-4" rpy="0 0 0" />
+      <mass value="0.04741" />
+      <inertia ixx="2.168E-06" ixy="-3.29E-7" ixz="-1.34E-7" iyy="1.1394E-5" iyz="-1.608E-8" izz="1.1045E-5" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_881e6eeeaecbf0a8.stl" />
+      </geometry>
+      <material name="left_index_PP_material_0">
+        <color rgba="0.79216 0.81961 0.93333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_6e4434712a5c668d.stl" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="left_index_MCP_AA" type="revolute">
+    <origin xyz="0 0 0" rpy="1.5708 0 0" />
+    <parent link="left_index_MCP_VL" />
+    <child link="left_index_PP" />
+    <axis xyz="0 0 1" />
+    <limit lower="-0.3491" upper="0.3491" effort="1.864" velocity="16.07692878" />
+  </joint>
+  <link name="left_index_MP">
+    <inertial>
+      <origin xyz="0.01212 -0.00116 5.8E-4" rpy="0 0 0" />
+      <mass value="0.01824" />
+      <inertia ixx="5.77E-7" ixy="-1.835E-8" ixz="1.0615E-7" iyy="1.923E-6" iyz="-4.01E-9" izz="1.9986E-6" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_0e9ac7a8208ab247.stl" />
+      </geometry>
+      <material name="left_index_MP_material_0">
+        <color rgba="0.79216 0.81961 0.93333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_1f0a96877af9ec35.stl" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="left_index_PIP" type="revolute">
+    <origin xyz="0.047 0 0" rpy="-1.5708 0 0" />
+    <parent link="left_index_PP" />
+    <child link="left_index_MP" />
+    <axis xyz="0 0 1" />
+    <limit lower="0" upper="1.7453" effort="0.638" velocity="11.61831603" />
+  </joint>
+  <link name="left_index_DP">
+    <inertial>
+      <origin xyz="0.01276 -0.00263 -1.1E-4" rpy="0 0 0" />
+      <mass value="0.00455" />
+      <inertia ixx="1.343E-7" ixy="-1.48E-9" ixz="5.97E-9" iyy="2.9365E-7" iyz="-8.7E-10" izz="2.981E-7" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_5123fd1776cfc828.stl" />
+      </geometry>
+      <material name="left_index_DP_material_0">
+        <color rgba="0.79216 0.81961 0.93333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_b28a529aadb4a084.stl" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="left_index_DIP" type="revolute">
+    <origin xyz="0.0315 0 0" rpy="0 0 0" />
+    <parent link="left_index_MP" />
+    <child link="left_index_DP" />
+    <axis xyz="0 0 1" />
+    <limit lower="0" upper="1.3963" effort="0.189369" velocity="14.66594768" />
+  </joint>
+  <link name="left_index_elastomer">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="1E-4" />
+      <inertia ixx="1E-10" ixy="0" ixz="0" iyy="1E-10" iyz="0" izz="1E-10" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_88b214c5c614b4b5.stl" />
+      </geometry>
+      <material name="left_index_elastomer_material_0">
+        <color rgba="0.2 1 0.2 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_88b214c5c614b4b5.stl" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="left_index_elastomer_fix_joint" type="fixed">
+    <origin xyz="0 0 0" rpy="1.5707963267949 -1.5707963267949 0" />
+    <parent link="left_index_DP" />
+    <child link="left_index_elastomer" />
+    <axis xyz="0 0 0" />
+  </joint>
+  <link name="left_index_fingertip">
+    <inertial>
+      <origin xyz="0.0 0.0 0.0" rpy="0 0 0" />
+      <mass value="1.0E-06" />
+      <inertia ixx="2.0E-12" ixy="0" ixz="0" iyy="2.0E-12" iyz="0" izz="2.0E-12" />
+    </inertial>
+  </link>
+  <joint name="left_index_fingertip_fix_joint" type="fixed">
+    <origin xyz="0 -0.0260092574262508 0" rpy="1.5707963267949 1.5707963267949 0" />
+    <parent link="left_index_elastomer" />
+    <child link="left_index_fingertip" />
+    <axis xyz="0 0 0" />
+  </joint>
+  <link name="left_middle_MCP_VL">
+    <inertial>
+      <origin xyz="-9.2E-03 -1.3E-03 0" rpy="0 0 0" />
+      <mass value="2.21E-03" />
+      <inertia ixx="1.77E-07" ixy="5.4E-09" ixz="0" iyy="1.104E-07" iyz="0" izz="2.23E-07" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_0e8b15c4d8426a26.stl" />
+      </geometry>
+      <material name="left_middle_MCP_VL_material_0">
+        <color rgba="0.79216 0.81961 0.93333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_587e34505de3b4f5.stl" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="left_middle_MCP_FE" type="revolute">
+    <origin xyz="0 -0.01 0.0989" rpy="0 -1.5708 -1.5708" />
+    <parent link="left_hand_C_MC" />
+    <child link="left_middle_MCP_VL" />
+    <axis xyz="0 0 1" />
+    <limit lower="-0.17453293" upper="1.5708" effort="1.864" velocity="16.07692878" />
+  </joint>
+  <link name="left_middle_PP">
+    <inertial>
+      <origin xyz="0.0270 -5.5E-4 -6.8E-4" rpy="0 0 0" />
+      <mass value="0.04741" />
+      <inertia ixx="2.168E-06" ixy="-3.29E-7" ixz="-1.34E-7" iyy="1.1394E-5" iyz="-1.608E-8" izz="1.1045E-5" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_881e6eeeaecbf0a8.stl" />
+      </geometry>
+      <material name="left_middle_PP_material_0">
+        <color rgba="0.79216 0.81961 0.93333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_6e4434712a5c668d.stl" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="left_middle_MCP_AA" type="revolute">
+    <origin xyz="0 0 0" rpy="1.5708 0 0" />
+    <parent link="left_middle_MCP_VL" />
+    <child link="left_middle_PP" />
+    <axis xyz="0 0 1" />
+    <limit lower="-0.3491" upper="0.3491" effort="1.864" velocity="16.07692878" />
+  </joint>
+  <link name="left_middle_MP">
+    <inertial>
+      <origin xyz="0.01212 -0.00116 5.8E-4" rpy="0 0 0" />
+      <mass value="0.01824" />
+      <inertia ixx="5.77E-7" ixy="-1.835E-8" ixz="1.0615E-7" iyy="1.923E-6" iyz="-4.01E-9" izz="1.9986E-6" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_0e9ac7a8208ab247.stl" />
+      </geometry>
+      <material name="left_middle_MP_material_0">
+        <color rgba="0.79216 0.81961 0.93333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_1f0a96877af9ec35.stl" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="left_middle_PIP" type="revolute">
+    <origin xyz="0.047 0 0" rpy="-1.5708 0 0" />
+    <parent link="left_middle_PP" />
+    <child link="left_middle_MP" />
+    <axis xyz="0 0 1" />
+    <limit lower="0" upper="1.7453" effort="0.638" velocity="11.61831603" />
+  </joint>
+  <link name="left_middle_DP">
+    <inertial>
+      <origin xyz="0.01276 -0.00263 -1.1E-4" rpy="0 0 0" />
+      <mass value="0.00455" />
+      <inertia ixx="1.343E-7" ixy="-1.48E-9" ixz="5.97E-9" iyy="2.9365E-7" iyz="-8.7E-10" izz="2.981E-7" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_5123fd1776cfc828.stl" />
+      </geometry>
+      <material name="left_middle_DP_material_0">
+        <color rgba="0.79216 0.81961 0.93333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_b28a529aadb4a084.stl" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="left_middle_DIP" type="revolute">
+    <origin xyz="0.0315 0 0" rpy="0 0 0" />
+    <parent link="left_middle_MP" />
+    <child link="left_middle_DP" />
+    <axis xyz="0 0 1" />
+    <limit lower="0" upper="1.3963" effort="0.189369" velocity="14.66594768" />
+  </joint>
+  <link name="left_middle_elastomer">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="1E-4" />
+      <inertia ixx="1E-10" ixy="0" ixz="0" iyy="1E-10" iyz="0" izz="1E-10" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_88b214c5c614b4b5.stl" />
+      </geometry>
+      <material name="left_middle_elastomer_material_0">
+        <color rgba="0.2 1 0.2 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_88b214c5c614b4b5.stl" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="left_middle_elastomer_fix_joint" type="fixed">
+    <origin xyz="0 0 0" rpy="1.5707963267949 -1.5707963267949 0" />
+    <parent link="left_middle_DP" />
+    <child link="left_middle_elastomer" />
+    <axis xyz="0 0 0" />
+  </joint>
+  <link name="left_middle_fingertip">
+    <inertial>
+      <origin xyz="0.0 0.0 0.0" rpy="0 0 0" />
+      <mass value="1.0E-06" />
+      <inertia ixx="2.0E-12" ixy="0" ixz="0" iyy="2.0E-12" iyz="0" izz="2.0E-12" />
+    </inertial>
+  </link>
+  <joint name="left_middle_fingertip_fix_joint" type="fixed">
+    <origin xyz="0 -0.0260092574262507 0" rpy="1.5707963267949 1.5707963267949 0" />
+    <parent link="left_middle_elastomer" />
+    <child link="left_middle_fingertip" />
+    <axis xyz="0 0 0" />
+  </joint>
+  <link name="left_ring_MCP_VL">
+    <inertial>
+      <origin xyz="-9.2E-03 -1.3E-03 0" rpy="0 0 0" />
+      <mass value="2.21E-03" />
+      <inertia ixx="1.77E-07" ixy="5.4E-09" ixz="0" iyy="1.104E-07" iyz="0" izz="2.23E-07" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_0e8b15c4d8426a26.stl" />
+      </geometry>
+      <material name="left_ring_MCP_VL_material_0">
+        <color rgba="0.79216 0.81961 0.93333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_587e34505de3b4f5.stl" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="left_ring_MCP_FE" type="revolute">
+    <origin xyz="0.0015 0.0103 0.0929" rpy="0 -1.5708 -1.5708" />
+    <parent link="left_hand_C_MC" />
+    <child link="left_ring_MCP_VL" />
+    <axis xyz="0 0 1" />
+    <limit lower="-0.17453293" upper="1.5708" effort="1.864" velocity="16.07692878" />
+  </joint>
+  <link name="left_ring_PP">
+    <inertial>
+      <origin xyz="0.0270 -5.5E-4 -6.8E-4" rpy="0 0 0" />
+      <mass value="0.04741" />
+      <inertia ixx="2.168E-06" ixy="-3.29E-7" ixz="-1.34E-7" iyy="1.1394E-5" iyz="-1.608E-8" izz="1.1045E-5" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_881e6eeeaecbf0a8.stl" />
+      </geometry>
+      <material name="left_ring_PP_material_0">
+        <color rgba="0.79216 0.81961 0.93333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_6e4434712a5c668d.stl" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="left_ring_MCP_AA" type="revolute">
+    <origin xyz="0 0 0" rpy="1.5708 0 0" />
+    <parent link="left_ring_MCP_VL" />
+    <child link="left_ring_PP" />
+    <axis xyz="0 0 1" />
+    <limit lower="-0.3491" upper="0.3491" effort="1.864" velocity="16.07692878" />
+  </joint>
+  <link name="left_ring_MP">
+    <inertial>
+      <origin xyz="0.01212 -0.00116 5.8E-4" rpy="0 0 0" />
+      <mass value="0.01824" />
+      <inertia ixx="5.77E-7" ixy="-1.835E-8" ixz="1.0615E-7" iyy="1.923E-6" iyz="-4.01E-9" izz="1.9986E-6" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_0e9ac7a8208ab247.stl" />
+      </geometry>
+      <material name="left_ring_MP_material_0">
+        <color rgba="0.79216 0.81961 0.93333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_1f0a96877af9ec35.stl" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="left_ring_PIP" type="revolute">
+    <origin xyz="0.047 0 0" rpy="-1.5708 0 0" />
+    <parent link="left_ring_PP" />
+    <child link="left_ring_MP" />
+    <axis xyz="0 0 1" />
+    <limit lower="0" upper="1.7453" effort="0.638" velocity="11.61831603" />
+  </joint>
+  <link name="left_ring_DP">
+    <inertial>
+      <origin xyz="0.01276 -0.00263 -1.1E-4" rpy="0 0 0" />
+      <mass value="0.00455" />
+      <inertia ixx="1.343E-7" ixy="-1.48E-9" ixz="5.97E-9" iyy="2.9365E-7" iyz="-8.7E-10" izz="2.981E-7" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_5123fd1776cfc828.stl" />
+      </geometry>
+      <material name="left_ring_DP_material_0">
+        <color rgba="0.79216 0.81961 0.93333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_b28a529aadb4a084.stl" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="left_ring_DIP" type="revolute">
+    <origin xyz="0.0315 0 0" rpy="0 0 0" />
+    <parent link="left_ring_MP" />
+    <child link="left_ring_DP" />
+    <axis xyz="0 0 1" />
+    <limit lower="0" upper="1.3963" effort="0.189369" velocity="14.66594768" />
+  </joint>
+  <link name="left_ring_elastomer">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="1E-4" />
+      <inertia ixx="1E-10" ixy="0" ixz="0" iyy="1E-10" iyz="0" izz="1E-10" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_88b214c5c614b4b5.stl" />
+      </geometry>
+      <material name="left_ring_elastomer_material_0">
+        <color rgba="0.2 1 0.2 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_88b214c5c614b4b5.stl" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="left_ring_elastomer_fix_joint" type="fixed">
+    <origin xyz="0 0 0" rpy="1.5708 -1.5708 0" />
+    <parent link="left_ring_DP" />
+    <child link="left_ring_elastomer" />
+    <axis xyz="0 0 0" />
+  </joint>
+  <link name="left_ring_fingertip">
+    <inertial>
+      <origin xyz="0.0 0.0 0.0" rpy="0 0 0" />
+      <mass value="1.0E-06" />
+      <inertia ixx="2.0E-12" ixy="0" ixz="0" iyy="2.0E-12" iyz="0" izz="2.0E-12" />
+    </inertial>
+  </link>
+  <joint name="left_ring_fingertip_fix_joint" type="fixed">
+    <origin xyz="0 -0.0260092574262507 0" rpy="1.5707963267949 1.5707963267949 0" />
+    <parent link="left_ring_elastomer" />
+    <child link="left_ring_fingertip" />
+    <axis xyz="0 0 0" />
+  </joint>
+  <link name="left_pinky_MC">
+    <inertial>
+      <origin xyz="0.0107985 0.00598801 -0.0335125" rpy="0 0 0" />
+      <mass value="0.12541" />
+      <inertia ixx="3.7226E-05" ixy="-3.22784E-08" ixz="-7.9079E-07" iyy="4.4739E-05" iyz="-1.019E-06" izz="1.7056E-05" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_d49c63f5adeca6b1.stl" />
+      </geometry>
+      <material name="left_pinky_MC_material_0">
+        <color rgba="0.79216 0.81961 0.93333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_f7a7192ae246a6b8.stl" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="left_pinky_CMC" type="revolute">
+    <origin xyz="0.01136 0.0263 0.0869" rpy="-3.1416 0 3.1416" />
+    <parent link="left_hand_C_MC" />
+    <child link="left_pinky_MC" />
+    <axis xyz="0 0 1" />
+    <limit lower="0" upper="0.2618" effort="0.5285" velocity="35.07416159" />
+  </joint>
+  <link name="left_pinky_MCP_VL">
+    <inertial>
+      <origin xyz="-9.2E-03 -1.3E-03 0" rpy="0 0 0" />
+      <mass value="2.21E-03" />
+      <inertia ixx="1.77E-07" ixy="5.4E-09" ixz="0" iyy="1.104E-07" iyz="0" izz="2.23E-07" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_0e8b15c4d8426a26.stl" />
+      </geometry>
+      <material name="left_pinky_MCP_VL_material_0">
+        <color rgba="0.79216 0.81961 0.93333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_587e34505de3b4f5.stl" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="left_pinky_MCP_FE" type="revolute">
+    <origin xyz="0.00836 0.0048 0" rpy="-1.5708 1.5708 0" />
+    <parent link="left_pinky_MC" />
+    <child link="left_pinky_MCP_VL" />
+    <axis xyz="0 0 1" />
+    <limit lower="-0.17453293" upper="1.5708" effort="1.864" velocity="16.07692878" />
+  </joint>
+  <link name="left_pinky_PP">
+    <inertial>
+      <origin xyz="0.0270 -5.5E-4 -6.8E-4" rpy="0 0 0" />
+      <mass value="0.04741" />
+      <inertia ixx="2.168E-06" ixy="-3.29E-7" ixz="-1.34E-7" iyy="1.1394E-5" iyz="-1.608E-8" izz="1.1045E-5" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_881e6eeeaecbf0a8.stl" />
+      </geometry>
+      <material name="left_pinky_PP_material_0">
+        <color rgba="0.79216 0.81961 0.93333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_6e4434712a5c668d.stl" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="left_pinky_MCP_AA" type="revolute">
+    <origin xyz="0 0 0" rpy="1.5708 0 0" />
+    <parent link="left_pinky_MCP_VL" />
+    <child link="left_pinky_PP" />
+    <axis xyz="0 0 1" />
+    <limit lower="-0.3491" upper="0.3491" effort="1.864" velocity="16.07692878" />
+  </joint>
+  <link name="left_pinky_MP">
+    <inertial>
+      <origin xyz="0.01212 -0.00116 5.8E-4" rpy="0 0 0" />
+      <mass value="0.01824" />
+      <inertia ixx="5.77E-7" ixy="-1.835E-8" ixz="1.0615E-7" iyy="1.923E-6" iyz="-4.01E-9" izz="1.9986E-6" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_0e9ac7a8208ab247.stl" />
+      </geometry>
+      <material name="left_pinky_MP_material_0">
+        <color rgba="0.79216 0.81961 0.93333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_1f0a96877af9ec35.stl" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="left_pinky_PIP" type="revolute">
+    <origin xyz="0.047 0 0" rpy="-1.5708 0 0" />
+    <parent link="left_pinky_PP" />
+    <child link="left_pinky_MP" />
+    <axis xyz="0 0 1" />
+    <limit lower="0" upper="1.7453" effort="0.638" velocity="11.61831603" />
+  </joint>
+  <link name="left_pinky_DP">
+    <inertial>
+      <origin xyz="0.01276 -0.00263 -1.1E-4" rpy="0 0 0" />
+      <mass value="0.00455" />
+      <inertia ixx="1.343E-7" ixy="-1.48E-9" ixz="5.97E-9" iyy="2.9365E-7" iyz="-8.7E-10" izz="2.981E-7" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_5123fd1776cfc828.stl" />
+      </geometry>
+      <material name="left_pinky_DP_material_0">
+        <color rgba="0.79216 0.81961 0.93333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_b28a529aadb4a084.stl" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="left_pinky_DIP" type="revolute">
+    <origin xyz="0.0315 0 0" rpy="0 0 0" />
+    <parent link="left_pinky_MP" />
+    <child link="left_pinky_DP" />
+    <axis xyz="0 0 1" />
+    <limit lower="0" upper="1.3963" effort="0.189369" velocity="14.66594768" />
+  </joint>
+  <link name="left_pinky_elastomer">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="1E-4" />
+      <inertia ixx="1E-10" ixy="0" ixz="0" iyy="1E-10" iyz="0" izz="1E-10" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_88b214c5c614b4b5.stl" />
+      </geometry>
+      <material name="left_pinky_elastomer_material_0">
+        <color rgba="0.2 1 0.2 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_88b214c5c614b4b5.stl" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="left_pinky_elastomer_fix_joint" type="fixed">
+    <origin xyz="0 0 0" rpy="1.5707963267949 -1.5707963267949 0" />
+    <parent link="left_pinky_DP" />
+    <child link="left_pinky_elastomer" />
+    <axis xyz="0 0 0" />
+  </joint>
+  <link name="left_pinky_fingertip">
+    <inertial>
+      <origin xyz="0.0 0.0 0.0" rpy="0 0 0" />
+      <mass value="1.0E-06" />
+      <inertia ixx="2.0E-12" ixy="0" ixz="0" iyy="2.0E-12" iyz="0" izz="2.0E-12" />
+    </inertial>
+  </link>
+  <joint name="left_pinky_fingertip_fix_joint" type="fixed">
+    <origin xyz="0 -0.0260092574262507 0" rpy="1.5707963267949 1.5707963267949 0" />
+    <parent link="left_pinky_elastomer" />
+    <child link="left_pinky_fingertip" />
+    <axis xyz="0 0 0" />
+  </joint>
+  <link name="left_retarget_wrist" />
+  <joint name="left_retarget_wrist_fixed" type="fixed">
+    <parent link="left_hand_wrist" />
+    <child link="left_retarget_wrist" />
+    <origin xyz="0 0 0" rpy="0 0 0" />
+  </joint>
+  <joint name="left_sharpa_mount" type="fixed">
+    <parent link="left_fanuc_flange" />
+    <child link="left_hand_flange" />
+    <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 3.141592653589793" />
+  </joint>
+  <joint name="right_base_mount" type="fixed">
+    <origin xyz="0.03058936 -0.91156264 0.00873476" rpy="0.009944929999999996 -0.01029918 -1.5469405499999997" />
+    <parent link="crx_base" />
+    <child link="right_base_link" />
+  </joint>
+  <link name="right_ee_mount" />
+  <link name="right_base_link">
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_627b9c0ec8da11a6.dae" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_28f866c8953490d7.stl" scale="0.001 0.001 0.001" />
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="2.695" />
+      <origin xyz="-0.02329 -0.00113 0.04668" />
+      <inertia ixx="0.004082061" ixy="0.000281666" ixz="0.001055913" iyy="0.008721822" iyz="4.52295E-05" izz="0.009813918" />
+    </inertial>
+  </link>
+  <link name="right_J1_link">
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 -0.185" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_2243da3036b19cd3.dae" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin rpy="0 0 -1.5707963267948966" xyz="0 0 -0.185" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_c92f932c0de2fe0a.stl" scale="0.001 0.001 0.001" />
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="5.173" />
+      <origin xyz="-0.00223 -0.04084 -0.03" />
+      <inertia ixx="0.027098156" ixy="-0.000166078" ixz="-0.000127776" iyy="0.015731396" iyz="-0.005631899" izz="0.0195838" />
+    </inertial>
+  </link>
+  <link name="right_J2_link">
+    <visual>
+      <origin rpy="0 0 0" xyz="-0.0 0 -0.185" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_18d46853975ddcc4.dae" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin rpy="0 0 -1.5707963267948966" xyz="-0.0 0 -0.185" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_cfb8c21642fbc853.stl" scale="0.001 0.001 0.001" />
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="5.014" />
+      <origin xyz="0.00013 -0.14378 0.18566" />
+      <inertia ixx="0.183168026" ixy="-3.67741E-05" ixz="0.000192371" iyy="0.178671177" iyz="0.01360861" izz="0.013395386" />
+    </inertial>
+  </link>
+  <link name="right_J3_link">
+    <visual>
+      <origin rpy="0 0 0" xyz="-0.0 0 -0.595" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_8e85468a09de21a6.dae" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin rpy="0 0 -1.5707963267948966" xyz="-0.0 0 -0.595" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_5befe26c622b7e18.stl" scale="0.001 0.001 0.001" />
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="3.133" />
+      <origin xyz="0.0303 -0.01286 -0.0002" />
+      <inertia ixx="0.005769799" ixy="0.001344252" ixz="1.14634E-05" iyy="0.008568956" iyz="1.8629E-06" izz="0.009083218" />
+    </inertial>
+  </link>
+  <link name="right_J4_link">
+    <visual>
+      <origin rpy="0 0 0" xyz="-0.0 0 -0.595" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_f9ce62e3ee389a7d.dae" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin rpy="0 0 -1.5707963267948966" xyz="-0.0 0 -0.595" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_948f18b82c395913.stl" scale="0.001 0.001 0.001" />
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="3.508" />
+      <origin xyz="0.28287 0.00109 0.00019" />
+      <inertia ixx="0.003276324" ixy="-0.00164576" ixz="-1.35414E-05" iyy="0.053727933" iyz="-4.1252E-06" izz="0.053791595" />
+    </inertial>
+  </link>
+  <link name="right_J5_link">
+    <visual>
+      <origin rpy="0 0 0" xyz="-0.43 0 -0.595" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_66451fde91faa2cb.dae" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin rpy="0 0 -1.5707963267948966" xyz="-0.43 0 -0.595" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_8ac2ab2b5eaab058.stl" scale="0.001 0.001 0.001" />
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="2.434" />
+      <origin xyz="0.01442 -0.09491 0.00164" />
+      <inertia ixx="0.006167974" ixy="-0.001284188" ixz="-2.28931E-05" iyy="0.003922645" iyz="-0.00029073" izz="0.007292078" />
+    </inertial>
+  </link>
+  <link name="right_J6_link">
+    <visual>
+      <origin rpy="0 0 0" xyz="-0.43 0.13 -0.595" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_bde2ae3b78622326.dae" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_1cf64807c9018e54.stl" scale="0.001 0.001 0.001" />
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="1.272" />
+      <origin xyz="0.10028 0.00052 0.00002" />
+      <inertia ixx="0.00143989" ixy="1.06324E-05" ixz="-7.92E-08" iyy="0.001354656" iyz="-2.602E-07" izz="0.001399779" />
+    </inertial>
+  </link>
+  <joint name="right_J1" type="revolute">
+    <origin rpy="0 0 0" xyz="0 0 0.185" />
+    <parent link="right_base_link" />
+    <child link="right_J1_link" />
+    <axis xyz="0 0 1" />
+    <limit effort="160" lower="-3.490658503988659" upper="3.490658503988659" velocity="2.6179938779914944" />
+  </joint>
+  <joint name="right_J2" type="revolute">
+    <origin rpy="0 0 0" xyz="0.0 0 0" />
+    <parent link="right_J1_link" />
+    <child link="right_J2_link" />
+    <axis xyz="0 1 0" />
+    <limit effort="160" lower="-3.139847324337799" upper="3.139847324337799" velocity="2.6179938779914944" />
+  </joint>
+  <joint name="right_J3" type="revolute">
+    <origin rpy="0 0 0" xyz="0 0 0.41" />
+    <parent link="right_J2_link" />
+    <child link="right_J3_link" />
+    <axis xyz="0 -1 0" />
+    <limit effort="160" lower="-1.1868238913561442" upper="4.328416544945937" velocity="3.141592653589793" />
+  </joint>
+  <joint name="right_J4" type="revolute">
+    <origin rpy="0 0 0" xyz="0 0 0.0" />
+    <parent link="right_J3_link" />
+    <child link="right_J4_link" />
+    <axis xyz="-1 0 0" />
+    <limit effort="40" lower="-3.3161255787892263" upper="3.3161255787892263" velocity="3.9269908169872414" />
+  </joint>
+  <joint name="right_J5" type="revolute">
+    <origin rpy="0 0 0" xyz="0.43 0 0" />
+    <parent link="right_J4_link" />
+    <child link="right_J5_link" />
+    <axis xyz="0 -1 0" />
+    <limit effort="40" lower="-3.139847324337799" upper="3.139847324337799" velocity="3.9269908169872414" />
+  </joint>
+  <joint name="right_J6" type="revolute">
+    <origin rpy="0 0 0" xyz="0 -0.13 0" />
+    <parent link="right_J5_link" />
+    <child link="right_J6_link" />
+    <axis xyz="-1 0 0" />
+    <limit effort="40" lower="-3.9269908169872414" upper="3.9269908169872414" velocity="3.9269908169872414" />
+  </joint>
+  <link name="right_wbase" />
+  <joint name="right_base_link_wbase" type="fixed">
+    <origin rpy="0 0 0" xyz="0 0 0.185" />
+    <parent link="right_base_link" />
+    <child link="right_wbase" />
+  </joint>
+  <link name="right_flange" />
+  <joint name="right_J6_flange" type="fixed">
+    <origin rpy="0 0 0" xyz="0.145 0 0" />
+    <parent link="right_J6_link" />
+    <child link="right_flange" />
+  </joint>
+  <link name="right_fanuc_flange" />
+  <joint name="right_flange_fanuc_flange" type="fixed">
+    <origin rpy="3.141592653589793 -1.5707963267948966 0.0" xyz="0 0 0" />
+    <parent link="right_flange" />
+    <child link="right_fanuc_flange" />
+  </joint>
+  <joint name="right_child_joint" type="fixed">
+    <origin rpy="0 0 0" xyz="0 0 0" />
+    <parent link="right_flange" />
+    <child link="right_ee_mount" />
+  </joint>
+  <link name="right_hand_flange">
+    <inertial>
+      <origin xyz="4.2E-3 -0.2E-4 3.6E-3" rpy="0 0 0" />
+      <mass value="0.016" />
+      <inertia ixx="5.924E-6" ixy="3.55E-10" ixz="4.4E-8" iyy="4.22E-6" iyz="7.28E-10" izz="9.97E-6" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_c5051bf5e1ee87cd.stl" />
+      </geometry>
+      <material name="right_hand_flange_material_0">
+        <color rgba="0.79216 0.81961 0.93333 1" />
+      </material>
+    </visual>
+  </link>
+  <joint name="right_hand_flange_fix_joint" type="fixed">
+    <origin xyz="0 0 0.0005" rpy="0 0 0" />
+    <parent link="right_hand_flange" />
+    <child link="right_hand_wrist" />
+    <axis xyz="0 0 0" />
+  </joint>
+  <link name="right_hand_wrist">
+    <inertial>
+      <origin xyz="-2.34E-3 2.2E-4 1.5E-2" rpy="0 0 0" />
+      <mass value="0.0505" />
+      <inertia ixx="1.25E-5" ixy="7.33E-9" ixz="5.4E-8" iyy="1.13E-5" iyz="1.01E-8" izz="1.64E-5" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_ce978dda8bbfb8ad.stl" />
+      </geometry>
+      <material name="right_hand_wrist_material_0">
+        <color rgba="0.79216 0.81961 0.93333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_147da80c56a334d8.stl" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="right_hand_wrist_fix_joint" type="fixed">
+    <origin xyz="0 0 0.029" rpy="0 0 0" />
+    <parent link="right_hand_wrist" />
+    <child link="right_hand_C_MC" />
+    <axis xyz="0 0 0" />
+  </joint>
+  <link name="right_hand_C_MC">
+    <inertial>
+      <origin xyz="-0.00216 0.00536 0.04011" rpy="0 0 0" />
+      <mass value="0.6506" />
+      <inertia ixx="0.000674254" ixy="2.498E-06" ixz="-7.348E-06" iyy="0.000793354" iyz="-1.05749E-04" izz="0.000294753" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_9234e513974246de.stl" />
+      </geometry>
+      <material name="right_hand_C_MC_material_0">
+        <color rgba="0.79216 0.81961 0.93333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_8c52941db271e933.stl" />
+      </geometry>
+    </collision>
+  </link>
+  <link name="right_thumb_CMC_VL">
+    <inertial>
+      <origin xyz="-6.5E-4 2E-4 0" rpy="0 0 0" />
+      <mass value="2.5E-03" />
+      <inertia ixx="2.08E-7" ixy="1.853E-8" ixz="0" iyy="1.39E-7" iyz="0" izz="2.60E-7" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_ebaf499965a51e4b.stl" />
+      </geometry>
+      <material name="right_thumb_CMC_VL_material_0">
+        <color rgba="0.79216 0.81961 0.93333 1" />
+      </material>
+    </visual>
+  </link>
+  <joint name="right_thumb_CMC_FE" type="revolute">
+    <origin xyz="0.01 0.026 0.0214" rpy="3.1416 0 1.5708" />
+    <parent link="right_hand_C_MC" />
+    <child link="right_thumb_CMC_VL" />
+    <axis xyz="0 0 1" />
+    <limit lower="-0.1745" upper="1.9199" effort="3.3" velocity="11.84076833" />
+  </joint>
+  <link name="right_thumb_MC">
+    <inertial>
+      <origin xyz="0.03643 -0.01024 0.00517" rpy="0 0 0" />
+      <mass value="0.13587" />
+      <inertia ixx="1.9220E-05" ixy="-1.981E-08" ixz="5.1687E-07" iyy="4.3621E-05" iyz="-1.534E-06" izz="4.6191E-05" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_81f4bf8c39117b7b.stl" />
+      </geometry>
+      <material name="right_thumb_MC_material_0">
+        <color rgba="0.79216 0.81961 0.93333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_deb6d97eb2d7223d.stl" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="right_thumb_CMC_AA" type="revolute">
+    <origin xyz="0 -0.005 0" rpy="-1.5708 0.7854 0" />
+    <parent link="right_thumb_CMC_VL" />
+    <child link="right_thumb_MC" />
+    <axis xyz="0 0 1" />
+    <limit lower="-0.3491" upper="0.3491" effort="3.3" velocity="11.84076833" />
+  </joint>
+  <link name="right_thumb_MCP_VL">
+    <inertial>
+      <origin xyz="-1.29E-09 -1.1E-10 0.00" rpy="0 0 0" />
+      <mass value="8E-5" />
+      <inertia ixx="6.4E-08" ixy="-1.61E-09" ixz="0" iyy="3.8E-08" iyz="0" izz="7.9E-08" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_30d656738130093b.stl" />
+      </geometry>
+      <material name="right_thumb_MCP_VL_material_0">
+        <color rgba="0.79216 0.81961 0.93333 1" />
+      </material>
+    </visual>
+  </link>
+  <joint name="right_thumb_MCP_FE" type="revolute">
+    <origin xyz="0.065 -0.006 0.010392" rpy="0.5236 0 0" />
+    <parent link="right_thumb_MC" />
+    <child link="right_thumb_MCP_VL" />
+    <axis xyz="0 0 1" />
+    <limit lower="-0.5236" upper="1.3963" effort="1.864" velocity="16.07692878" />
+  </joint>
+  <link name="right_thumb_PP">
+    <inertial>
+      <origin xyz="0.021256 -0.00095 -0.00092" rpy="0 0 0" />
+      <mass value="0.03078" />
+      <inertia ixx="1.255E-06" ixy="-4.00E-07" ixz="-4.267E-08" iyy="6.047E-06" iyz="2.004E-08" izz="5.915E-06" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_1024905f9af3ad14.stl" />
+      </geometry>
+      <material name="right_thumb_PP_material_0">
+        <color rgba="0.79216 0.81961 0.93333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_795b35f943c42723.stl" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="right_thumb_MCP_AA" type="revolute">
+    <origin xyz="0 0 0" rpy="-1.5708 0 0" />
+    <parent link="right_thumb_MCP_VL" />
+    <child link="right_thumb_PP" />
+    <axis xyz="0 0 1" />
+    <limit lower="-0.3491" upper="0.3491" effort="1.864" velocity="16.07692878" />
+  </joint>
+  <link name="right_thumb_DP">
+    <inertial>
+      <origin xyz="0.00832 -0.00180 -0.00101" rpy="0 0 0" />
+      <mass value="0.00788" />
+      <inertia ixx="3.1462E-07" ixy="-1.026E-07" ixz="7.094E-08" iyy="1.038E-06" iyz="-1.40E-08" izz="1.05884E-06" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_db4e895306f51b7c.stl" />
+      </geometry>
+      <material name="right_thumb_DP_material_0">
+        <color rgba="0.79216 0.81961 0.93333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_df2dcfc770ecf81e.stl" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="right_thumb_IP" type="revolute">
+    <origin xyz="0.039 0 0" rpy="1.5708 0 0" />
+    <parent link="right_thumb_PP" />
+    <child link="right_thumb_DP" />
+    <axis xyz="0 0 1" />
+    <limit lower="0" upper="1.7453" effort="0.638" velocity="11.61831603" />
+  </joint>
+  <link name="right_thumb_elastomer">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="1E-4" />
+      <inertia ixx="1E-10" ixy="0" ixz="0" iyy="1E-10" iyz="0" izz="1E-10" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_437f363ca7a40b6e.stl" />
+      </geometry>
+      <material name="right_thumb_elastomer_material_0">
+        <color rgba="0.2 1 0.2 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_437f363ca7a40b6e.stl" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="right_thumb_elastomer_fix_joint" type="fixed">
+    <origin xyz="0 0 0" rpy="1.5708 -1.5708 0" />
+    <parent link="right_thumb_DP" />
+    <child link="right_thumb_elastomer" />
+    <axis xyz="0 0 0" />
+  </joint>
+  <link name="right_thumb_fingertip">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="1.0E-06" />
+      <inertia ixx="2.0E-12" ixy="0" ixz="0" iyy="2.0E-12" iyz="0" izz="2.0E-12" />
+    </inertial>
+  </link>
+  <joint name="right_thumb_fingertip_fix_joint" type="fixed">
+    <origin xyz="0 -0.027611 0" rpy="1.5708 1.5708 0" />
+    <parent link="right_thumb_elastomer" />
+    <child link="right_thumb_fingertip" />
+    <axis xyz="0 0 0" />
+  </joint>
+  <link name="right_index_MCP_VL">
+    <inertial>
+      <origin xyz="-9.2E-03 1.3E-03 0" rpy="0 0 0" />
+      <mass value="2.21E-03" />
+      <inertia ixx="1.77E-07" ixy="-5.4E-09" ixz="0" iyy="1.104E-07" iyz="0" izz="2.23E-07" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_ec48548aaafa6589.stl" />
+      </geometry>
+      <material name="right_index_MCP_VL_material_0">
+        <color rgba="0.79216 0.81961 0.93333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_350f66d656fef760.stl" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="right_index_MCP_FE" type="revolute">
+    <origin xyz="0.001 0.0303 0.0959" rpy="0 -1.5708 -1.5708" />
+    <parent link="right_hand_C_MC" />
+    <child link="right_index_MCP_VL" />
+    <axis xyz="0 0 1" />
+    <limit lower="-0.17453293" upper="1.5708" effort="1.864" velocity="16.07692878" />
+  </joint>
+  <link name="right_index_PP">
+    <inertial>
+      <origin xyz="0.0270 5.5E-4 6.8E-4" rpy="0 0 0" />
+      <mass value="0.04741" />
+      <inertia ixx="2.168E-06" ixy="3.29E-7" ixz="1.34E-7" iyy="1.1394E-5" iyz="-1.608E-8" izz="1.1045E-5" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_aa8b0ac6b6a77690.stl" />
+      </geometry>
+      <material name="right_index_PP_material_0">
+        <color rgba="0.79216 0.81961 0.93333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_ed975b59e2569759.stl" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="right_index_MCP_AA" type="revolute">
+    <origin xyz="0 0 0" rpy="-1.5708 0 0" />
+    <parent link="right_index_MCP_VL" />
+    <child link="right_index_PP" />
+    <axis xyz="0 0 1" />
+    <limit lower="-0.3491" upper="0.3491" effort="1.864" velocity="16.07692878" />
+  </joint>
+  <link name="right_index_MP">
+    <inertial>
+      <origin xyz="0.01212 -0.00116 5.8E-4" rpy="0 0 0" />
+      <mass value="0.01824" />
+      <inertia ixx="5.77E-7" ixy="-1.835E-8" ixz="1.0615E-7" iyy="1.923E-6" iyz="-4.01E-9" izz="1.9986E-6" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_af867d754ae0f3d5.stl" />
+      </geometry>
+      <material name="right_index_MP_material_0">
+        <color rgba="0.79216 0.81961 0.93333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_98ad7e6e990f6185.stl" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="right_index_PIP" type="revolute">
+    <origin xyz="0.047 0 0" rpy="1.5708 0 0" />
+    <parent link="right_index_PP" />
+    <child link="right_index_MP" />
+    <axis xyz="0 0 1" />
+    <limit lower="0" upper="1.7453" effort="0.638" velocity="11.61831603" />
+  </joint>
+  <link name="right_index_DP">
+    <inertial>
+      <origin xyz="0.01276 -0.00263 -1.1E-4" rpy="0 0 0" />
+      <mass value="0.00455" />
+      <inertia ixx="1.343E-7" ixy="-1.48E-9" ixz="5.97E-9" iyy="2.9365E-7" iyz="-8.7E-10" izz="2.981E-7" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_5123fd1776cfc828.stl" />
+      </geometry>
+      <material name="right_index_DP_material_0">
+        <color rgba="0.79216 0.81961 0.93333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_b28a529aadb4a084.stl" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="right_index_DIP" type="revolute">
+    <origin xyz="0.0315 0 0" rpy="0 0 0" />
+    <parent link="right_index_MP" />
+    <child link="right_index_DP" />
+    <axis xyz="0 0 1" />
+    <limit lower="0" upper="1.3963" effort="0.189369" velocity="14.66594768" />
+  </joint>
+  <link name="right_index_elastomer">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="1E-4" />
+      <inertia ixx="1E-10" ixy="0" ixz="0" iyy="1E-10" iyz="0" izz="1E-10" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_88b214c5c614b4b5.stl" />
+      </geometry>
+      <material name="right_index_elastomer_material_0">
+        <color rgba="0.2 1 0.2 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_88b214c5c614b4b5.stl" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="right_index_elastomer_fix_joint" type="fixed">
+    <origin xyz="0 0 0" rpy="1.5708 -1.5708 0" />
+    <parent link="right_index_DP" />
+    <child link="right_index_elastomer" />
+    <axis xyz="0 0 0" />
+  </joint>
+  <link name="right_index_fingertip">
+    <inertial>
+      <origin xyz="0.0 0.0 0.0" rpy="0 0 0" />
+      <mass value="1.0E-06" />
+      <inertia ixx="2.0E-12" ixy="0" ixz="0" iyy="2.0E-12" iyz="0" izz="2.0E-12" />
+    </inertial>
+  </link>
+  <joint name="right_index_fingertip_fix_joint" type="fixed">
+    <origin xyz="0 -0.026009 0" rpy="1.5708 1.5708 0" />
+    <parent link="right_index_elastomer" />
+    <child link="right_index_fingertip" />
+    <axis xyz="0 0 0" />
+  </joint>
+  <link name="right_middle_MCP_VL">
+    <inertial>
+      <origin xyz="-9.2E-03 1.3E-03 0" rpy="0 0 0" />
+      <mass value="2.21E-03" />
+      <inertia ixx="1.77E-07" ixy="-5.4E-09" ixz="0" iyy="1.104E-07" iyz="0" izz="2.23E-07" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_ec48548aaafa6589.stl" />
+      </geometry>
+      <material name="right_middle_MCP_VL_material_0">
+        <color rgba="0.79216 0.81961 0.93333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_350f66d656fef760.stl" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="right_middle_MCP_FE" type="revolute">
+    <origin xyz="0 0.01 0.0989" rpy="0 -1.5708 -1.5708" />
+    <parent link="right_hand_C_MC" />
+    <child link="right_middle_MCP_VL" />
+    <axis xyz="0 0 1" />
+    <limit lower="-0.17453293" upper="1.5708" effort="1.864" velocity="16.07692878" />
+  </joint>
+  <link name="right_middle_PP">
+    <inertial>
+      <origin xyz="0.0270 5.5E-4 6.8E-4" rpy="0 0 0" />
+      <mass value="0.04741" />
+      <inertia ixx="2.168E-06" ixy="3.29E-7" ixz="1.34E-7" iyy="1.1394E-5" iyz="-1.608E-8" izz="1.1045E-5" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_aa8b0ac6b6a77690.stl" />
+      </geometry>
+      <material name="right_middle_PP_material_0">
+        <color rgba="0.79216 0.81961 0.93333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_ed975b59e2569759.stl" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="right_middle_MCP_AA" type="revolute">
+    <origin xyz="0 0 0" rpy="-1.5708 0 0" />
+    <parent link="right_middle_MCP_VL" />
+    <child link="right_middle_PP" />
+    <axis xyz="0 0 1" />
+    <limit lower="-0.3491" upper="0.3491" effort="1.864" velocity="16.07692878" />
+  </joint>
+  <link name="right_middle_MP">
+    <inertial>
+      <origin xyz="0.01212 -0.00116 5.8E-4" rpy="0 0 0" />
+      <mass value="0.01824" />
+      <inertia ixx="5.77E-7" ixy="-1.835E-8" ixz="1.0615E-7" iyy="1.923E-6" iyz="-4.01E-9" izz="1.9986E-6" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_af867d754ae0f3d5.stl" />
+      </geometry>
+      <material name="right_middle_MP_material_0">
+        <color rgba="0.79216 0.81961 0.93333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_98ad7e6e990f6185.stl" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="right_middle_PIP" type="revolute">
+    <origin xyz="0.047 0 0" rpy="1.5708 0 0" />
+    <parent link="right_middle_PP" />
+    <child link="right_middle_MP" />
+    <axis xyz="0 0 1" />
+    <limit lower="0" upper="1.7453" effort="0.638" velocity="11.61831603" />
+  </joint>
+  <link name="right_middle_DP">
+    <inertial>
+      <origin xyz="0.01276 -0.00263 -1.1E-4" rpy="0 0 0" />
+      <mass value="0.00455" />
+      <inertia ixx="1.343E-7" ixy="-1.48E-9" ixz="5.97E-9" iyy="2.9365E-7" iyz="-8.7E-10" izz="2.981E-7" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_5123fd1776cfc828.stl" />
+      </geometry>
+      <material name="right_middle_DP_material_0">
+        <color rgba="0.79216 0.81961 0.93333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_b28a529aadb4a084.stl" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="right_middle_DIP" type="revolute">
+    <origin xyz="0.0315 0 0" rpy="0 0 0" />
+    <parent link="right_middle_MP" />
+    <child link="right_middle_DP" />
+    <axis xyz="0 0 1" />
+    <limit lower="0" upper="1.3963" effort="0.189369" velocity="14.66594768" />
+  </joint>
+  <link name="right_middle_elastomer">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="1E-4" />
+      <inertia ixx="1E-10" ixy="0" ixz="0" iyy="1E-10" iyz="0" izz="1E-10" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_88b214c5c614b4b5.stl" />
+      </geometry>
+      <material name="right_middle_elastomer_material_0">
+        <color rgba="0.2 1 0.2 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_88b214c5c614b4b5.stl" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="right_middle_elastomer_fix_joint" type="fixed">
+    <origin xyz="0 0 0" rpy="1.5707963267949 -1.5707963267949 0" />
+    <parent link="right_middle_DP" />
+    <child link="right_middle_elastomer" />
+    <axis xyz="0 0 0" />
+  </joint>
+  <link name="right_middle_fingertip">
+    <inertial>
+      <origin xyz="0.0 0.0 0.0" rpy="0 0 0" />
+      <mass value="1.0E-06" />
+      <inertia ixx="2.0E-12" ixy="0" ixz="0" iyy="2.0E-12" iyz="0" izz="2.0E-12" />
+    </inertial>
+  </link>
+  <joint name="right_middle_fingertip_fix_joint" type="fixed">
+    <origin xyz="0 -0.0260092574262507 0" rpy="1.5707963267949 1.5707963267949 0" />
+    <parent link="right_middle_elastomer" />
+    <child link="right_middle_fingertip" />
+    <axis xyz="0 0 0" />
+  </joint>
+  <link name="right_ring_MCP_VL">
+    <inertial>
+      <origin xyz="-9.2E-03 1.3E-03 0" rpy="0 0 0" />
+      <mass value="2.21E-03" />
+      <inertia ixx="1.77E-07" ixy="-5.4E-09" ixz="0" iyy="1.104E-07" iyz="0" izz="2.23E-07" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_ec48548aaafa6589.stl" />
+      </geometry>
+      <material name="right_ring_MCP_VL_material_0">
+        <color rgba="0.79216 0.81961 0.93333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_350f66d656fef760.stl" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="right_ring_MCP_FE" type="revolute">
+    <origin xyz="0.0015 -0.0103 0.0929" rpy="0 -1.5708 -1.5708" />
+    <parent link="right_hand_C_MC" />
+    <child link="right_ring_MCP_VL" />
+    <axis xyz="0 0 1" />
+    <limit lower="-0.17453293" upper="1.5708" effort="1.864" velocity="16.07692878" />
+  </joint>
+  <link name="right_ring_PP">
+    <inertial>
+      <origin xyz="0.0270 5.5E-4 6.8E-4" rpy="0 0 0" />
+      <mass value="0.04741" />
+      <inertia ixx="2.168E-06" ixy="3.29E-7" ixz="1.34E-7" iyy="1.1394E-5" iyz="-1.608E-8" izz="1.1045E-5" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_aa8b0ac6b6a77690.stl" />
+      </geometry>
+      <material name="right_ring_PP_material_0">
+        <color rgba="0.79216 0.81961 0.93333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_ed975b59e2569759.stl" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="right_ring_MCP_AA" type="revolute">
+    <origin xyz="0 0 0" rpy="-1.5708 0 0" />
+    <parent link="right_ring_MCP_VL" />
+    <child link="right_ring_PP" />
+    <axis xyz="0 0 1" />
+    <limit lower="-0.3491" upper="0.3491" effort="1.864" velocity="16.07692878" />
+  </joint>
+  <link name="right_ring_MP">
+    <inertial>
+      <origin xyz="0.01212 -0.00116 5.8E-4" rpy="0 0 0" />
+      <mass value="0.01824" />
+      <inertia ixx="5.77E-7" ixy="-1.835E-8" ixz="1.0615E-7" iyy="1.923E-6" iyz="-4.01E-9" izz="1.9986E-6" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_af867d754ae0f3d5.stl" />
+      </geometry>
+      <material name="right_ring_MP_material_0">
+        <color rgba="0.79216 0.81961 0.93333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_98ad7e6e990f6185.stl" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="right_ring_PIP" type="revolute">
+    <origin xyz="0.047 0 0" rpy="1.5708 0 0" />
+    <parent link="right_ring_PP" />
+    <child link="right_ring_MP" />
+    <axis xyz="0 0 1" />
+    <limit lower="0" upper="1.7453" effort="0.638" velocity="11.61831603" />
+  </joint>
+  <link name="right_ring_DP">
+    <inertial>
+      <origin xyz="0.01276 -0.00263 -1.1E-4" rpy="0 0 0" />
+      <mass value="0.00455" />
+      <inertia ixx="1.343E-7" ixy="-1.48E-9" ixz="5.97E-9" iyy="2.9365E-7" iyz="-8.7E-10" izz="2.981E-7" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_5123fd1776cfc828.stl" />
+      </geometry>
+      <material name="right_ring_DP_material_0">
+        <color rgba="0.79216 0.81961 0.93333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_b28a529aadb4a084.stl" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="right_ring_DIP" type="revolute">
+    <origin xyz="0.0315 0 0" rpy="0 0 0" />
+    <parent link="right_ring_MP" />
+    <child link="right_ring_DP" />
+    <axis xyz="0 0 1" />
+    <limit lower="0" upper="1.3963" effort="0.189369" velocity="14.66594768" />
+  </joint>
+  <link name="right_ring_elastomer">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="1E-4" />
+      <inertia ixx="1E-10" ixy="0" ixz="0" iyy="1E-10" iyz="0" izz="1E-10" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_88b214c5c614b4b5.stl" />
+      </geometry>
+      <material name="right_ring_elastomer_material_0">
+        <color rgba="0.2 1 0.2 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_88b214c5c614b4b5.stl" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="right_ring_elastomer_fix_joint" type="fixed">
+    <origin xyz="0 0 0" rpy="1.5708 -1.5708 0" />
+    <parent link="right_ring_DP" />
+    <child link="right_ring_elastomer" />
+    <axis xyz="0 0 0" />
+  </joint>
+  <link name="right_ring_fingertip">
+    <inertial>
+      <origin xyz="0.0 0.0 0.0" rpy="0 0 0" />
+      <mass value="1.0E-06" />
+      <inertia ixx="2.0E-12" ixy="0" ixz="0" iyy="2.0E-12" iyz="0" izz="2.0E-12" />
+    </inertial>
+  </link>
+  <joint name="right_ring_fingertip_fix_joint" type="fixed">
+    <origin xyz="0 -0.0260092574262503 0" rpy="1.5707963267949 1.5707963267949 0" />
+    <parent link="right_ring_elastomer" />
+    <child link="right_ring_fingertip" />
+    <axis xyz="0 0 0" />
+  </joint>
+  <link name="right_pinky_MC">
+    <inertial>
+      <origin xyz="0.0107985 0.00598801 -0.0335125" rpy="0 0 0" />
+      <mass value="0.12541" />
+      <inertia ixx="3.7226E-05" ixy="-3.22784E-08" ixz="7.9079E-07" iyy="4.4739E-05" iyz="1.019E-06" izz="1.7056E-05" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_5ae38bab4f573bd1.stl" />
+      </geometry>
+      <material name="right_pinky_MC_material_0">
+        <color rgba="0.79216 0.81961 0.93333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_1f8207aff0f2f6ca.stl" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="right_pinky_CMC" type="revolute">
+    <origin xyz="0.01136 -0.0263 0.0869" rpy="0 0 3.1416" />
+    <parent link="right_hand_C_MC" />
+    <child link="right_pinky_MC" />
+    <axis xyz="0 0 1" />
+    <limit lower="0" upper="0.2618" effort="0.5285" velocity="35.07416159" />
+  </joint>
+  <link name="right_pinky_MCP_VL">
+    <inertial>
+      <origin xyz="-9.2E-03 1.3E-03 0" rpy="0 0 0" />
+      <mass value="2.21E-03" />
+      <inertia ixx="1.77E-07" ixy="-5.4E-09" ixz="0" iyy="1.104E-07" iyz="0" izz="2.23E-07" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_ec48548aaafa6589.stl" />
+      </geometry>
+      <material name="right_pinky_MCP_VL_material_0">
+        <color rgba="0.79216 0.81961 0.93333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_350f66d656fef760.stl" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="right_pinky_MCP_FE" type="revolute">
+    <origin xyz="0.00836 0.0048 0" rpy="1.5708 -1.5708 0" />
+    <parent link="right_pinky_MC" />
+    <child link="right_pinky_MCP_VL" />
+    <axis xyz="0 0 1" />
+    <limit lower="-0.17453293" upper="1.5708" effort="1.864" velocity="16.07692878" />
+  </joint>
+  <link name="right_pinky_PP">
+    <inertial>
+      <origin xyz="0.0270 5.5E-4 6.8E-4" rpy="0 0 0" />
+      <mass value="0.04741" />
+      <inertia ixx="2.168E-06" ixy="3.29E-7" ixz="1.34E-7" iyy="1.1394E-5" iyz="-1.608E-8" izz="1.1045E-5" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_aa8b0ac6b6a77690.stl" />
+      </geometry>
+      <material name="right_pinky_PP_material_0">
+        <color rgba="0.79216 0.81961 0.93333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_ed975b59e2569759.stl" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="right_pinky_MCP_AA" type="revolute">
+    <origin xyz="0 0 0" rpy="-1.5708 0 0" />
+    <parent link="right_pinky_MCP_VL" />
+    <child link="right_pinky_PP" />
+    <axis xyz="0 0 1" />
+    <limit lower="-0.3491" upper="0.3491" effort="1.864" velocity="16.07692878" />
+  </joint>
+  <link name="right_pinky_MP">
+    <inertial>
+      <origin xyz="0.01212 -0.00116 5.8E-4" rpy="0 0 0" />
+      <mass value="0.01824" />
+      <inertia ixx="5.77E-7" ixy="-1.835E-8" ixz="1.0615E-7" iyy="1.923E-6" iyz="-4.01E-9" izz="1.9986E-6" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_af867d754ae0f3d5.stl" />
+      </geometry>
+      <material name="right_pinky_MP_material_0">
+        <color rgba="0.79216 0.81961 0.93333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_98ad7e6e990f6185.stl" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="right_pinky_PIP" type="revolute">
+    <origin xyz="0.047 0 0" rpy="1.5708 0 0" />
+    <parent link="right_pinky_PP" />
+    <child link="right_pinky_MP" />
+    <axis xyz="0 0 1" />
+    <limit lower="0" upper="1.7453" effort="0.638" velocity="11.61831603" />
+  </joint>
+  <link name="right_pinky_DP">
+    <inertial>
+      <origin xyz="0.01276 -0.00263 -1.1E-4" rpy="0 0 0" />
+      <mass value="0.00455" />
+      <inertia ixx="1.343E-7" ixy="-1.48E-9" ixz="5.97E-9" iyy="2.9365E-7" iyz="-8.7E-10" izz="2.981E-7" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_5123fd1776cfc828.stl" />
+      </geometry>
+      <material name="right_pinky_DP_material_0">
+        <color rgba="0.79216 0.81961 0.93333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_b28a529aadb4a084.stl" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="right_pinky_DIP" type="revolute">
+    <origin xyz="0.0315 0 0" rpy="0 0 0" />
+    <parent link="right_pinky_MP" />
+    <child link="right_pinky_DP" />
+    <axis xyz="0 0 1" />
+    <limit lower="0" upper="1.3963" effort="0.189369" velocity="14.66594768" />
+  </joint>
+  <link name="right_pinky_elastomer">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="1E-4" />
+      <inertia ixx="1E-10" ixy="0" ixz="0" iyy="1E-10" iyz="0" izz="1E-10" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_88b214c5c614b4b5.stl" />
+      </geometry>
+      <material name="right_pinky_elastomer_material_0">
+        <color rgba="0.1 1 0.2 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../meshes/crx_sharpa/mesh_88b214c5c614b4b5.stl" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="right_pinky_elastomer_fix_joint" type="fixed">
+    <origin xyz="0 0 0" rpy="1.5708 -1.5708 0" />
+    <parent link="right_pinky_DP" />
+    <child link="right_pinky_elastomer" />
+    <axis xyz="0 0 0" />
+  </joint>
+  <link name="right_pinky_fingertip">
+    <inertial>
+      <origin xyz="0.0 0.0 0.0" rpy="0 0 0" />
+      <mass value="1.0E-06" />
+      <inertia ixx="2.0E-12" ixy="0" ixz="0" iyy="2.0E-12" iyz="0" izz="2.0E-12" />
+    </inertial>
+  </link>
+  <joint name="right_pinky_fingertip_fix_joint" type="fixed">
+    <origin xyz="0 -0.026009 0" rpy="1.5708 1.5708 0" />
+    <parent link="right_pinky_elastomer" />
+    <child link="right_pinky_fingertip" />
+    <axis xyz="0 0 0" />
+  </joint>
+  <link name="right_retarget_wrist" />
+  <joint name="right_retarget_wrist_fixed" type="fixed">
+    <parent link="right_hand_wrist" />
+    <child link="right_retarget_wrist" />
+    <origin xyz="0 0 0" rpy="0 0 0" />
+  </joint>
+  <joint name="right_sharpa_mount" type="fixed">
+    <parent link="right_fanuc_flange" />
+    <child link="right_hand_flange" />
+    <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+  </joint>
+</robot>

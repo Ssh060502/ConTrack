@@ -1,0 +1,19 @@
+schema_version: 1
+robot: sharpa_wave_left
+format: repository_robot_assets
+entrypoints:
+  urdf: urdf/sharpa_wave_left.urdf
+sources:
+  assets/robots/sharpa_wave_left/urdf/left_sharpa_wave_with_flange.urdf: bb949924510240e77dcf7d480b956fbfb764d0718d12f64aafe38496ea5f6ca0
+mount:
+  parent: world
+  xyz:
+  - 0
+  - 0
+  - 0
+  rpy:
+  - 0
+  - 0
+  - 0
+mount_calibrated: false
+generated_urdf_sha256: 6a215a9051d0b0b47a1176236d8734a287f97233d0c6cc9b64303dc399e7b632

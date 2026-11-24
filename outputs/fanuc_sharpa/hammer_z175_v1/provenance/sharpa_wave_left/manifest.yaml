@@ -1,0 +1,12 @@
+schema_version: 1
+robot: sharpa_wave_left
+format: repository_robot_assets
+entrypoints:
+  urdf: urdf/left_sharpa_wave_with_flange.urdf
+source:
+  repository: https://github.com/sharpa-robotics/sharpa-urdf-usd-xml
+  commit: 0d19cac602f46456b819e4b6a2c09a74982c9a3e
+  urdf: wave_01/left_sharpa_wave/left_sharpa_wave_with_flange.urdf
+  upstream_urdf_sha256: 6ea8d2c563c6d4ba56f5f4b04aa7d339f5b703ac8e5ec02404ca5f632d7c28a2
+  imported_urdf_sha256: 08d6eb905697216cf335e651c11db379a0b2ea13cb5c1f37841e335dcf54c367
+generated_urdf_sha256: bb949924510240e77dcf7d480b956fbfb764d0718d12f64aafe38496ea5f6ca0
