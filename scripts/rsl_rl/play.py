@@ -72,16 +72,16 @@ if session_dir is not None:
         ref = sorted((repo_root / "data").rglob(ref.name))[0]
     session_reference_path = str(ref.resolve())
 
+if "Crx-Sharpa" in args_cli.task:
+    _data_variable = "CONTRACK_CRX_SHARPA_DATA"
+elif "Rby1a-Sharpa" in args_cli.task:
+    _data_variable = "CONTRACK_RBY1A_SHARPA_DATA"
+else:
+    _data_variable = "CONTRACK_XARM_XHAND_DATA"
 if args_cli.data is not None:
-    if "Rby1a-Sharpa" in args_cli.task:
-        os.environ["CONTRACK_RBY1A_SHARPA_DATA"] = args_cli.data
-    else:
-        os.environ["CONTRACK_XARM_XHAND_DATA"] = args_cli.data
+    os.environ[_data_variable] = args_cli.data
 elif session_reference_path:
-    if "Rby1a-Sharpa" in args_cli.task:
-        os.environ["CONTRACK_RBY1A_SHARPA_DATA"] = session_reference_path
-    else:
-        os.environ["CONTRACK_XARM_XHAND_DATA"] = session_reference_path
+    os.environ[_data_variable] = session_reference_path
 
 if args_cli.video:
     args_cli.enable_cameras = True

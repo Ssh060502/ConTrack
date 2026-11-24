@@ -1,6 +1,8 @@
 {
   "urdf": "crx_sharpa.urdf",
+  "sha256": "384fb1e7bf123a2d0e0623168619955103552a37b27b8d904ec080ce25e203d2",
   "root_link": "crx_base",
+  "calibration_id": "dual_crx_sharpa_d415_20261122_v1",
   "bases_xyz_rpy": {
     "left": [
       0.0,
@@ -11,13 +13,61 @@
       0.0
     ],
     "right": [
-      0.03058936,
-      -0.91156264,
-      0.00873476,
-      0.009944929999999996,
-      -0.01029918,
-      -1.5469405499999997
+      0.03340744,
+      -0.99546257,
+      0.0109306,
+      0.01335405,
+      -0.02065696,
+      -1.54875984
     ]
+  },
+  "hand_mounts_ee_mount_to_hand_flange": {
+    "left": {
+      "xyz_m": [
+        -0.00149,
+        0.0016,
+        0.00239
+      ],
+      "rpy_rad": [
+        2.24123,
+        1.50697,
+        2.24087
+      ],
+      "fit_mean_rms_mm": 2.7
+    },
+    "right": {
+      "xyz_m": [
+        0.00396,
+        0.00068,
+        -0.00192
+      ],
+      "rpy_rad": [
+        0.34037,
+        -1.53028,
+        2.78902
+      ],
+      "fit_mean_rms_mm": 2.75
+    }
+  },
+  "hand_mount_change_from_nominal": {
+    "left": {
+      "rotation_from_nominal_deg": 3.657037296788063,
+      "translation_from_nominal_m": 0.003239166559471742
+    },
+    "right": {
+      "rotation_from_nominal_deg": 2.4244017832678875,
+      "translation_from_nominal_m": 0.004453133728061622
+    }
+  },
+  "single_arm_urdf": {
+    "left": {
+      "file": "crx_sharpa_left.urdf",
+      "sha256": "5122c866d1aac96d9fad7129bb839e2224ecc4326ff37285abcceb12fbc48901"
+    },
+    "right": {
+      "file": "crx_sharpa_right.urdf",
+      "sha256": "b9b21594dce1a65761be89a4bc7f8110ef8447cd7a3b6ddf4f814f0cf60fa54f"
+    }
   },
   "joint_names": {
     "left": [
@@ -84,6 +134,5 @@
   "source_bundle_sha256": {
     "left": "38df9ebca1219ac7bb67f6dab10d110ff25d531391cb8ce959acfc7c2ea427f3",
     "right": "bc22c2003bd0e549b17ce1fa6036caead0a70e081e68aa8dce8e6c7a1f75c9a3"
-  },
-  "right_base_verified": false
+  }
 }

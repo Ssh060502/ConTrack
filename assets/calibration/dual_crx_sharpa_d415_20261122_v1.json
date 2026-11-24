@@ -1,0 +1,32 @@
+{
+  "calibration_id": "dual_crx_sharpa_d415_20261122_v1",
+  "status": "configuration_pending_physical_validation",
+  "note": "Subset of the lab file dual_system_calibration_20261122.json: only the transforms the simulation asset uses. Same key layout, so the full lab file can be passed instead.",
+  "conventions": {
+    "world_frame": "leftbase",
+    "transform": "T_A_B maps a point expressed in B into frame A",
+    "rotation_order": "fixed-axis URDF roll-pitch-yaw (Rz(yaw) @ Ry(pitch) @ Rx(roll))"
+  },
+  "authoritative": {
+    "dual_crx": {
+      "T_leftbase_rightbase": {
+        "xyz_m": [0.03340744, -0.99546257, 0.0109306],
+        "rpy_rad": [0.01335405, -0.02065696, -1.54875984]
+      }
+    },
+    "hand_mounts": {
+      "frame_from": "FANUC ee_mount/flange",
+      "frame_to": "Sharpa hand mount (left_hand_flange / right_hand_flange)",
+      "left": {
+        "xyz_m": [-0.00149, 0.0016, 0.00239],
+        "rpy_rad": [2.24123, 1.50697, 2.24087],
+        "fit_mean_rms_mm": 2.7
+      },
+      "right": {
+        "xyz_m": [0.00396, 0.00068, -0.00192],
+        "rpy_rad": [0.34037, -1.53028, 2.78902],
+        "fit_mean_rms_mm": 2.75
+      }
+    }
+  }
+}

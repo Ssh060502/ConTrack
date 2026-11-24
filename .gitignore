@@ -34,3 +34,6 @@ data/xhand/*
 !data/sharpa/
 data/sharpa/*
 !data/sharpa/*.h5
+!data/crx_sharpa/
+data/crx_sharpa/*
+!data/crx_sharpa/*.h5

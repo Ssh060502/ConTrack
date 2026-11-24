@@ -1117,10 +1117,10 @@
   <joint name="left_sharpa_mount" type="fixed">
     <parent link="left_fanuc_flange" />
     <child link="left_hand_flange" />
-    <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 3.141592653589793" />
+    <origin xyz="0.00239 -0.0015999999999999999 -0.0014900000000000004" rpy="0.0013519217882609826 0.039622398769937194 -3.09154091184331" />
   </joint>
   <joint name="right_base_mount" type="fixed">
-    <origin xyz="0.03058936 -0.91156264 0.00873476" rpy="0.009944929999999996 -0.01029918 -1.5469405499999997" />
+    <origin xyz="0.03340744 -0.99546257 0.0109306" rpy="0.01335405 -0.02065696 -1.54875984" />
     <parent link="crx_base" />
     <child link="right_base_link" />
   </joint>
@@ -2235,6 +2235,6 @@
   <joint name="right_sharpa_mount" type="fixed">
     <parent link="right_fanuc_flange" />
     <child link="right_hand_flange" />
-    <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+    <origin xyz="-0.0019199999999999998 -0.0006800000000000005 0.00396" rpy="-0.01246880365683124 0.038022822934076675 -0.013997574982161658" />
   </joint>
 </robot>

@@ -13,6 +13,8 @@ from isaaclab.app import AppLauncher
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument("--data", required=True)
 parser.add_argument("--output", required=True, help="New MP4 output path")
+parser.add_argument("--robot", choices=["rby1a", "crx"], default="rby1a",
+                    help="Which Sharpa task the reference file belongs to")
 AppLauncher.add_app_launcher_args(parser)
 args = parser.parse_args()
 data_path = Path(args.data).expanduser().resolve()
@@ -21,7 +23,11 @@ if not data_path.is_file():
     parser.error(f"Data not found: {data_path}")
 if output.exists():
     parser.error(f"Output already exists: {output}")
-os.environ["CONTRACK_RBY1A_SHARPA_DATA"] = str(data_path)
+TASK, DATA_VARIABLE = {
+    "rby1a": ("Isaac-Rby1a-Sharpa-Mimic-Manager-Play-v0", "CONTRACK_RBY1A_SHARPA_DATA"),
+    "crx": ("Isaac-Crx-Sharpa-Mimic-Manager-Play-v0", "CONTRACK_CRX_SHARPA_DATA"),
+}[args.robot]
+os.environ[DATA_VARIABLE] = str(data_path)
 args.enable_cameras = True
 launcher = AppLauncher(args)
 
@@ -34,9 +40,8 @@ import ConTrack.tasks
 
 
 def main():
-    cfg = parse_env_cfg("Isaac-Rby1a-Sharpa-Mimic-Manager-Play-v0",
-                        device=args.device or "cuda:0", num_envs=1)
-    env = gym.make("Isaac-Rby1a-Sharpa-Mimic-Manager-Play-v0", cfg=cfg, render_mode="rgb_array")
+    cfg = parse_env_cfg(TASK, device=args.device or "cuda:0", num_envs=1)
+    env = gym.make(TASK, cfg=cfg, render_mode="rgb_array")
     try:
         env.reset()
         base = env.unwrapped
