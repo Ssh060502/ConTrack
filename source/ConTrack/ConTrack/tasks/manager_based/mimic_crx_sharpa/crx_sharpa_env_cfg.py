@@ -759,8 +759,8 @@ class CrxSharpaEnvCfg(ManagerBasedRLEnvCfg):
         self.sim.physx.solve_articulation_contact_last = True
         self.sim.physx.gpu_max_rigid_patch_count = 2**20
         # Face the two arms from the table side; the workspace is between the bases.
-        self.viewer.eye = (1.7, -0.5, 0.9)
-        self.viewer.lookat = (0.35, -0.5, 0.0)
+        self.viewer.eye = (2.9, -0.5, 1.4)
+        self.viewer.lookat = (0.2, -0.5, 0.3)
 
 
 @configclass
