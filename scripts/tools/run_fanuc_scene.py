@@ -279,6 +279,14 @@ def main():
         # after persisting/flushing diagnostics; the OS releases GPU resources.
         import os
         os._exit(1)
+    else:
+        # All outputs are already written and closed. SimulationApp.close() can
+        # hang on this server after a camera run, so leave without it.
+        import os
+        import sys
+        sys.stdout.flush()
+        sys.stderr.flush()
+        os._exit(0)
     finally:
         try:
             launcher.app.close()
