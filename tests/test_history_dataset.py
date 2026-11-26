@@ -82,6 +82,19 @@ class HistoryDataTests(unittest.TestCase):
             self.assertEqual(episodes[0].state.shape,(6,7))
             self.assertEqual(info['action_dim'],4)
             self.assertEqual(info['skipped'][0]['reason'],'exact duplicate episode')
+            # Same tool, different robot: keep them out even when both are
+            # recursively discovered under the same collection root.
+            crx=Path(directory)/'crx';crx.mkdir()
+            import shutil
+            shutil.copyfile(path,crx/'episodes.h5')
+            with h5py.File(crx/'episodes.h5','a') as f:
+                f.attrs['metadata_json']=json.dumps({'reference_path':'/data/waterbottle-crx_sharpa.h5',
+                                                    'checkpoint':'crx.pt','task':'Isaac-Crx-Sharpa-Mimic-Manager-v0'})
+            old,old_info=load_episodes([directory],'waterbottle')
+            new,new_info=load_episodes([directory],'waterbottle','crx')
+            self.assertEqual(old_info['robot'],'rby1a');self.assertEqual(new_info['robot'],'crx')
+            self.assertEqual(len(old),1);self.assertEqual(len(new),1)
+            self.assertTrue(any(x['reason']=='other robot' for x in old_info['skipped']))
 
 
 if __name__=='__main__':unittest.main()

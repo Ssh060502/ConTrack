@@ -11,14 +11,19 @@ import sys
 import traceback
 import uuid
 import yaml
+import importlib
 
 repo = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(repo))
 sys.path.insert(0, str(repo / "source" / "ConTrack"))
 from isaaclab.app import AppLauncher
+from scripts.tools.adaptation_profiles import robot_profile, action_indices
 
 parser = argparse.ArgumentParser(description=__doc__)
-parser.add_argument("--tool", choices=("mug", "waterbottle"), default="mug")
+parser.add_argument("--tool", choices=("mug", "waterbottle", "hammer", "fryingpan", "flashlight", "cylinder"), default="mug")
+parser.add_argument("--robot", choices=("rby1a", "crx"), default="rby1a")
+parser.add_argument('--context-source',choices=('oracle','history'),default='oracle')
+parser.add_argument('--history-checkpoint',help='Frozen history_best.pt; required with --context-source history')
 parser.add_argument("--mode", choices=("train", "evaluate"), default="train")
 parser.add_argument("--session", default=None)
 parser.add_argument("--base_checkpoint", default=None)
@@ -48,7 +53,14 @@ profiles = {
     "mug": ("sharpa_mug_sweep/grab-s4_mug_pass_1-rby1a_sharpa-2026_10_14-03_57_03-sharpa_mug_sweep_trial", "model_1500.pt"),
     "waterbottle": ("sharpa_waterbottle_baseline/grab-s1_waterbottle_offhand_1-rby1a_sharpa-24_504-2026_11_16-12_27_58", "model_1999.pt"),
 }
-default_session, default_model = profiles[args.tool]
+if args.robot == 'crx':
+    profiles = {
+        'hammer': ('sharpa_crx_hammer_baseline/grab-s1_hammer_use_1-crx_sharpa-slow3-cal1122-2026_11_24-14_17_44_cal1122_env8000','model_1999.pt'),
+        'mug': ('sharpa_crx_mug_baseline/grab-s4_mug_pass_1-crx_sharpa-slow3-cal1122-2026_11_24-16_25_46_cal1122_env8000','model_1999.pt'),
+    }
+if args.tool not in profiles and not args.session:
+    parser.error('This robot/tool needs an explicit --session')
+default_session, default_model = profiles.get(args.tool, ('', 'model_1999.pt'))
 session = Path(args.session).expanduser().resolve() if args.session else repo / "logs/rsl_rl" / default_session
 base_checkpoint = Path(args.base_checkpoint).expanduser().resolve() if args.base_checkpoint else session / default_model
 if args.data:
@@ -60,10 +72,11 @@ else:
         data = Path(cfg_data["reference_path"]).expanduser().resolve()
     except (OSError, KeyError, TypeError, yaml.YAMLError) as exc:
         parser.error(f"Cannot read reference_path from session: {exc}; specify --data")
-args.conditions = args.conditions or ("1:2,3:2" if args.tool=="waterbottle" else "1:2,3:2,6:2,1:0.7,1:0.2")
+args.conditions = args.conditions or ("1:2,6:2,1:1" if args.robot=='crx' else
+                                     "1:2,3:2" if args.tool=="waterbottle" else "1:2,3:2,6:2,1:0.7,1:0.2")
 if args.correction_scale is None:
-    args.correction_scale = .1 if args.tool=="waterbottle" else .5
-args.objective = args.objective or ("task-only" if args.tool=="waterbottle" else "inherit")
+    args.correction_scale = .1 if args.tool=="waterbottle" or args.robot=='crx' else .5
+args.objective = args.objective or ("task-only" if args.tool=="waterbottle" or args.robot=='crx' else "inherit")
 for path in (session/"params/agent.yaml", base_checkpoint, data):
     if not path.is_file():
         parser.error(f"Required file missing: {path}")
@@ -81,7 +94,14 @@ if args.oracle_mass_scale is not None and (args.mode != 'evaluate' or args.polic
     parser.error('--oracle-mass-scale is only for adapter evaluation')
 if args.oracle_mass_scale is not None and (not math.isfinite(args.oracle_mass_scale) or args.oracle_mass_scale<=0):
     parser.error('--oracle-mass-scale must be finite and positive')
-os.environ["CONTRACK_RBY1A_SHARPA_DATA"] = str(data)
+if args.context_source == 'history' and not args.history_checkpoint:
+    parser.error('--context-source history requires --history-checkpoint')
+if args.context_source == 'oracle' and args.history_checkpoint:
+    parser.error('--history-checkpoint requires --context-source history')
+if args.context_source == 'history' and args.oracle_mass_scale is not None:
+    parser.error('History control does not consume oracle parameter inputs')
+profile = robot_profile(args.robot)
+os.environ[profile['data_env']] = str(data)
 # Establish the original nominal mass before per-environment scaling. Do not let
 # shell variables silently change both the nominal mass and the scale labels.
 os.environ.pop("CONTRACK_SHARPA_OBJECT_MASS_SCALE", None)
@@ -95,7 +115,7 @@ from isaaclab_tasks.utils import parse_env_cfg
 from isaaclab_rl.rsl_rl import RslRlVecEnvWrapper
 import isaaclab_tasks
 import ConTrack.tasks
-from ConTrack.tasks.manager_based.mimic_rby1a_sharpa import mdp
+mdp = importlib.import_module(profile['mdp'])
 from rsl_rl_contrack.env.cons_mimic_reward_wrapper import ConsMimicRewardWrapper
 from rsl_rl_contrack.env.oracle_physics import parse_conditions, configure_physics, OracleContextWrapper, override_mass_context
 from rsl_rl_contrack.env.oracle_diagnostics import OracleDiagnosticsWrapper
@@ -120,6 +140,8 @@ class AdapterRunner(runner_module.OnPolicyRunner):
                                 "cmdp_task_weight": locs["loss_dict"]["cmdp/task_weight"]})+"\n")
 
     def save(self, path, infos=None):
+        if self.history_wrapper is not None:
+            self.history_wrapper.verify_frozen()
         if frozen_digest(self.alg.policy.base) != self.adapter_info["frozen_base_digest"]:
             raise RuntimeError("Frozen base changed before checkpoint save")
         return super().save(path, infos=infos or {"oracle_adapter":self.adapter_info})
@@ -129,7 +151,7 @@ def main():
     conditions = parse_conditions(args.conditions)
     if args.mode == "evaluate" and len(conditions) != 1:
         raise ValueError("Evaluate one condition at a time")
-    task = "Isaac-Rby1a-Sharpa-Mimic-Manager-v0"
+    task = profile['task']
     device = args.device or "cuda:0"
     cfg = parse_env_cfg(task, device=device, num_envs=args.num_envs)
     cfg.seed = args.seed
@@ -145,12 +167,20 @@ def main():
         context, physics = configure_physics(raw.unwrapped, conditions)
         if args.oracle_mass_scale is not None:
             context = override_mass_context(context, physics, args.oracle_mass_scale)
-        env = OracleContextWrapper(ConsMimicRewardWrapper(wrapped, raw.unwrapped), context)
+        reward_env = ConsMimicRewardWrapper(wrapped, raw.unwrapped)
+        history_wrapper = None
+        context_key = 'oracle'
+        if args.context_source == 'history':
+            from rsl_rl_contrack.env.history_context import HistoryContextWrapper
+            history_wrapper = HistoryContextWrapper(reward_env,args.history_checkpoint,args.robot,args.tool,data)
+            env = history_wrapper
+            context_key = 'history'
+        else:
+            env = OracleContextWrapper(reward_env, context)
         if args.mode == "train":
             names = [raw.unwrapped.scene[name].joint_names[int(j)]
                      for name, ids, _ in raw.unwrapped.ref_hands for j in ids]
-            arms = [i for i, name in enumerate(names) if "_arm_" in name]
-            fingers = [i for i, name in enumerate(names) if "_arm_" not in name]
+            arms, fingers = action_indices(names)
             if len(names) != env.num_actions or not arms or not fingers:
                 raise ValueError("Cannot determine arm/finger action mapping")
             env = OracleDiagnosticsWrapper(env, conditions, physics["condition_id"], arms, fingers)
@@ -164,7 +194,7 @@ def main():
         config.update(device=device, seed=args.seed, logger=args.logger, wandb_project=args.project,
                       num_steps_per_env=args.rollout_steps, save_interval=args.save_interval,
                       max_iterations=args.max_iterations)
-        config["obs_groups"] = {key: list(base_groups[key])+["oracle"] for key in ("policy", "critic")}
+        config["obs_groups"] = {key: list(base_groups[key])+[context_key] for key in ("policy", "critic")}
         config["policy"] = dict(class_name="OracleAdapterActorCritic", base_checkpoint=str(base_checkpoint),
                                 base_policy_cfg=policy_cfg, base_obs_groups=base_groups,
                                 correction_scale=args.correction_scale, actor_obs_normalization=True,
@@ -182,6 +212,12 @@ def main():
             run = saved.get("infos", {}).get("oracle_adapter") if isinstance(saved.get("infos"), dict) else None
             if run is None:
                 raise ValueError("Not an oracle-adapter checkpoint")
+            if run['metadata'].get('context_source','oracle') != args.context_source:
+                raise ValueError('Adapter context source differs (oracle vs history); retrain the residual MLP')
+            if history_wrapper is not None and run['metadata'].get('history_encoder_digest') != history_wrapper.encoder_digest:
+                raise ValueError('History encoder differs from the adapter training encoder')
+            if run['metadata'].get('task',task) != task:
+                raise ValueError('Adapter checkpoint belongs to a different robot/task')
             if Path(run["metadata"]["reference_path"]).name != data.name:
                 raise ValueError("Adapter reference_path differs from this tool/data; do not load a mug adapter for waterbottle")
             for key in ("policy", "obs_groups", "algorithm"):
@@ -191,14 +227,17 @@ def main():
             config["policy"]["base_checkpoint"] = str(base_checkpoint)
         directory = (Path(args.output_dir).expanduser().resolve() if args.output_dir else
                      Path(args.output_root).expanduser().resolve() / (
-                         f"{args.tool}_{args.mode}_{args.policy}_{datetime.now():%Y%m%d_%H%M%S}_{uuid.uuid4().hex[:6]}"))
+                         f"{('crx_' if args.robot=='crx' else '')}{args.tool}_{args.mode}_{args.policy}_{('history_' if args.context_source=='history' else '')}{datetime.now():%Y%m%d_%H%M%S}_{uuid.uuid4().hex[:6]}"))
         directory.mkdir(parents=True)
         cfg.log_dir = str(directory)
         config["wandb_run_name"] = directory.name
         config["experiment_name"] = f"oracle_adapter_{args.tool}"
         pristine = copy.deepcopy(config)
         (directory/"runner_config.json").write_text(json.dumps(pristine, indent=2))
-        metadata = {"tool":args.tool, "base_checkpoint":str(base_checkpoint), "reference_path":str(data),
+        metadata = {"tool":args.tool, "robot":args.robot, "base_checkpoint":str(base_checkpoint), "reference_path":str(data),
+                    'context_source':args.context_source,'history_checkpoint':args.history_checkpoint,
+                    'history_encoder_digest':history_wrapper.encoder_digest if history_wrapper is not None else None,
+                    'history_cold_start':'zero latent until first completed transition' if history_wrapper is not None else None,
                     "seed":args.seed, "mode":args.mode, "evaluation_policy":args.policy,
                     "conditions":conditions, "reset":"reference frame 0, no curriculum, pose log-only",
                     "reward":"original task/style/penalty terms, unchanged", "robot_self_collisions":True,
@@ -213,6 +252,7 @@ def main():
         (directory/"physics.json").write_text(json.dumps(physics, indent=2))
         runner_module.OracleAdapterActorCritic = OracleAdapterActorCritic
         runner = AdapterRunner(env, config, log_dir=str(directory) if args.mode=="train" else None, device=device)
+        runner.history_wrapper = history_wrapper
         actor = runner.alg.policy
         if args.mode == "train":
             env.policy = actor
@@ -227,14 +267,18 @@ def main():
         else:
             actor.eval()
             with torch.inference_mode():
-                torch.testing.assert_close(actor.act_inference(obs), actor.base.act_inference(obs), rtol=0, atol=0)
-            print("[adapter] Zero-initialized adapter exactly matches frozen base inference.", flush=True)
+                # Compare means before final inference clipping. A pretrained
+                # base mean can exceed [-1,1]; the environment clips both paths.
+                torch.testing.assert_close(actor.mean_action(obs), actor.base.act_inference(obs), rtol=0, atol=0)
+            print("[adapter] Zero-initialized adapter mean exactly matches frozen base inference.", flush=True)
         before = frozen_digest(actor.base)
         runner.adapter_info = {"runner_config":pristine, "metadata":metadata, "frozen_base_digest":before}
         print(f"[adapter] Trainable parameters: {sum(p.numel() for p in actor.parameters() if p.requires_grad)}", flush=True)
         print(f"[adapter] Outputs: {directory}", flush=True)
         if args.mode == "train":
             runner.learn(args.max_iterations, init_at_random_ep_len=False)
+            if history_wrapper is not None:
+                history_wrapper.verify_frozen()
             if frozen_digest(actor.base) != before:
                 raise RuntimeError("Frozen base weights/normalizer changed")
             # Save configuration alongside every normal runner checkpoint as well

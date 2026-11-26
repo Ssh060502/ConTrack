@@ -18,7 +18,8 @@ from scripts.tools.history_evaluation import evaluate_history
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--inputs',nargs='+',required=True,help='Collection files or directories recursively containing episodes.h5')
-    parser.add_argument('--tool',choices=('mug','waterbottle'),default='waterbottle')
+    parser.add_argument('--tool',choices=('mug','waterbottle','hammer','fryingpan','flashlight','cylinder'),default='waterbottle')
+    parser.add_argument('--robot',choices=('rby1a','crx'),default='rby1a')
     parser.add_argument('--prepare-only',action='store_true',help='Audit/split without importing torch')
     parser.add_argument('--split-unit',choices=('episode','file'),default='episode')
     parser.add_argument('--split-manifest',help='Freeze data membership/splits from an earlier manifest, matching content hashes')
@@ -39,7 +40,7 @@ def main():
             or not math.isfinite(args.learning_rate) or args.learning_rate<=0
             or not math.isfinite(args.dynamics_weight) or args.dynamics_weight<0):
         parser.error('Counts/learning rate must be positive; dynamics weight nonnegative')
-    episodes,info=load_episodes(args.inputs,args.tool)
+    episodes,info=load_episodes(args.inputs,args.tool,args.robot)
     if len({e.condition for e in episodes})<2:
         parser.error('Need multiple physical conditions to test parameter inference')
     if args.split_manifest:
@@ -53,7 +54,7 @@ def main():
     stats=fit_normalization(episodes,splits['train'])
     manifest=make_manifest(episodes,splits,info,args.history,args.stride,args.split_unit)
     output=(Path(args.output_dir).expanduser().resolve() if args.output_dir else
-            Path(args.output_root).expanduser().resolve()/f'{args.tool}_history_{datetime.now():%Y%m%d_%H%M%S}_{uuid.uuid4().hex[:6]}')
+            Path(args.output_root).expanduser().resolve()/f'{("crx_" if args.robot=="crx" else "")}{args.tool}_history_{datetime.now():%Y%m%d_%H%M%S}_{uuid.uuid4().hex[:6]}')
     output.mkdir(parents=True)
     (output/'manifest.json').write_text(json.dumps(manifest,indent=2))
     (output/'config.json').write_text(json.dumps(vars(args),indent=2))
@@ -112,7 +113,7 @@ def main():
                 print(f'[history] epoch={epoch} train={total/count:.4f} val={val["loss"]:.4f} mass_mae={val["mass_mae_kg"]:.4f}kg friction_mae={val["friction_mae"]:.4f}',flush=True)
                 payload=dict(model_state_dict=model.state_dict(),architecture=architecture,normalization=stats,
                              feature_names=info['feature_names'],control_dt=info['control_dt'],config=vars(args),epoch=epoch,
-                             data_schema=dict(version='contrack_history_v1',hand_mapping=info['hand_mapping'],
+                             data_schema=dict(version='contrack_history_v1',robot=args.robot,references=info['references'],hand_mapping=info['hand_mapping'],
                                               contact_mapping=info['contact_mapping'],
                                               action_order='applied_residual_then_joint_targets_in_sorted_hand_order',
                                               parameter_order=['log_mass_kg','log_object_friction']),

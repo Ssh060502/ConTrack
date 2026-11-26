@@ -25,7 +25,7 @@ def main():
     run=Path(args.run).expanduser().resolve()
     saved=torch.load(run/'history_best.pt',map_location=args.device,weights_only=False)
     config=saved['config'];manifest=json.loads((run/'manifest.json').read_text())
-    episodes,info=load_episodes(args.inputs,config['tool'])
+    episodes,info=load_episodes(args.inputs,config['tool'],config.get('robot','rby1a'))
     episodes,splits=restore_manifest_split(episodes,info,manifest)
     architecture=saved['architecture']
     if architecture['state_dim']!=len(info['feature_names']) or architecture['action_dim']!=info['action_dim']:

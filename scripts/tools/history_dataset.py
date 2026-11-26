@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 import numpy as np
 import h5py
+from scripts.tools.adaptation_profiles import collection_robot
 
 
 @dataclass
@@ -52,7 +53,7 @@ def physical_label(physics):
     return np.log(np.array([mass[0], mu[0]], dtype=np.float32))
 
 
-def load_episodes(inputs, tool):
+def load_episodes(inputs, tool, robot='rby1a'):
     paths = set()
     for item in inputs:
         p = Path(item).expanduser().resolve()
@@ -66,6 +67,9 @@ def load_episodes(inputs, tool):
                 skipped.append({'path':str(path),'reason':'not an episode collection'})
                 continue
             metadata = json.loads(f.attrs['metadata_json'])
+            if collection_robot(metadata) != robot:
+                skipped.append({'path':str(path),'reason':'other robot'})
+                continue
             reference = metadata['reference_path']
             if tool not in Path(reference).name.lower():
                 skipped.append({'path':str(path),'reason':'other tool'})
@@ -114,6 +118,7 @@ def load_episodes(inputs, tool):
     if len(reference_paths) != 1 or len(control_dt) != 1:
         raise ValueError('Use one reference clip and control frequency per prototype experiment')
     return episodes, dict(feature_names=schema[0], action_dim=schema[1], control_dt=next(iter(control_dt)),
+                          robot=robot,
                           hand_mapping=schema[2],contact_mapping=schema[3],
                           references=sorted(reference_paths), checkpoints=sorted(str(x) for x in checkpoints), skipped=skipped)
 
@@ -157,6 +162,8 @@ def fit_normalization(episodes, train_ids):
 
 def restore_manifest_split(episodes, info, manifest):
     """Restore exact episode membership by content hash, even after copying files."""
+    if manifest.get('robot') is not None and info.get('robot') != manifest['robot']:
+        raise ValueError('Frozen manifest robot mismatch')
     for key in ('feature_names','action_dim','control_dt','references','hand_mapping','contact_mapping'):
         if info.get(key) != manifest.get(key):
             raise ValueError(f'Frozen manifest schema mismatch: {key}')

@@ -35,7 +35,7 @@ def main():
     commands=[];rows=[]
     for history in args.histories:
         output=destination/f'history_{history}'
-        command=[sys.executable,'-u',str(train),'--tool',config['tool'],'--inputs',*args.inputs,
+        command=[sys.executable,'-u',str(train),'--tool',config['tool'],'--robot',config.get('robot','rby1a'),'--inputs',*args.inputs,
                  '--split-manifest',str(manifest),'--history',str(history),'--epochs',str(epochs),
                  '--device',args.device,'--logger',args.logger,'--project',args.project,'--output-dir',str(output)]
         for key in ('seed','stride','batch_size','learning_rate','dynamics_weight'):
