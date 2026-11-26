@@ -29,6 +29,8 @@ TASK, DATA_VARIABLE = {
 }[args.robot]
 os.environ[DATA_VARIABLE] = str(data_path)
 args.enable_cameras = True
+# Offscreen rendering is only enabled for headless + cameras; this tool only writes an MP4.
+args.headless = True
 launcher = AppLauncher(args)
 
 import gymnasium as gym

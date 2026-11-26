@@ -137,13 +137,20 @@ def main(
         raise ValueError("Self-collision diagnostic requires --collect_trajectories")
 
     if args_cli.collect_trajectories:
-        if "Rby1a-Sharpa" not in args_cli.task or env_cfg.scene.num_envs != 1:
-            raise ValueError("Trajectory collection requires Rby1a-Sharpa and --num_envs 1")
+        if not any(name in args_cli.task for name in ("Rby1a-Sharpa", "Crx-Sharpa")) or env_cfg.scene.num_envs != 1:
+            raise ValueError("Trajectory collection requires Rby1a-Sharpa or Crx-Sharpa and --num_envs 1")
         if args_cli.export_rollout:
             raise ValueError("Use collection without --export_rollout")
         if args_cli.episodes <= 0 or args_cli.collection_max_steps <= 0:
             raise ValueError("Episode and step limits must be positive")
-        from ConTrack.tasks.manager_based.mimic_rby1a_sharpa import mdp as sharpa_mdp
+        if "Crx-Sharpa" in args_cli.task:
+            from ConTrack.tasks.manager_based.mimic_crx_sharpa import mdp as sharpa_mdp
+            collection_robot_cfg = env_cfg.scene.crx_sharpa
+            if args_cli.trace_reset:
+                raise ValueError("CRX collection supports episodes/videos; reset substep tracing is not yet supported")
+        else:
+            from ConTrack.tasks.manager_based.mimic_rby1a_sharpa import mdp as sharpa_mdp
+            collection_robot_cfg = env_cfg.scene.rby1a_sharpa
         # Avoid the training reset library and threshold curriculum changing the
         # initial-state distribution or failure criterion between episodes.
         env_cfg.events.reset_to_demo.func = sharpa_mdp.reset_reference_episode_first_frame
@@ -152,7 +159,7 @@ def main(
         env_cfg.terminations.pose_break.func = diagnostic_pose_term(
             env_cfg.terminations.pose_break.func, args_cli.pose_break_mode)
         if args_cli.diagnostic_no_self_collisions:
-            env_cfg.scene.rby1a_sharpa.spawn.articulation_props.enabled_self_collisions = False
+            collection_robot_cfg.spawn.articulation_props.enabled_self_collisions = False
             print("[DIAGNOSTIC ONLY] Robot self collisions disabled; do not pool this run with normal training data.")
 
     env = gym.make(args_cli.task, cfg=env_cfg, render_mode="rgb_array" if args_cli.video else None)
@@ -162,7 +169,7 @@ def main(
     # Report resolved PhysX values, not just the requested density/material settings.
     # The collection view flattens environments and objects; ranges cover all of them.
     physics_report = {}
-    if "Rby1a-Sharpa" in args_cli.task:
+    if any(name in args_cli.task for name in ("Rby1a-Sharpa", "Crx-Sharpa")):
         objects = env.unwrapped.scene["objects"]
         view = objects.root_physx_view
         for key, values in (
@@ -218,7 +225,7 @@ def main(
                      "reference_path": str(env_cfg.reference_path),
                      "seed": int(cfg["seed"]), "task": args_cli.task,
                      "pose_break_mode": args_cli.pose_break_mode,
-                     "robot_self_collisions": bool(env_cfg.scene.rby1a_sharpa.spawn.articulation_props.enabled_self_collisions),
+                     "robot_self_collisions": bool(collection_robot_cfg.spawn.articulation_props.enabled_self_collisions),
                      "diagnostic_no_self_collisions": args_cli.diagnostic_no_self_collisions},
                     video_folder=(args_cli.video_folder or
                                   str(Path(args_cli.collect_trajectories).parent / "videos"))

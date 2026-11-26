@@ -302,12 +302,17 @@ with h5py.File(DATA_PATH, "r") as _f:
     _asset_record = json.loads(ASSET_RECORD_PATH.read_text(encoding="utf-8"))
     _asset_bases = _asset_record["bases_xyz_rpy"]
     # The hand mount calibration lives in the arm model used for retargeting.
-    _expected_urdf = _asset_record["single_arm_urdf"]["right"]
-    if _f.attrs.get("right_urdf_sha256", "") != _expected_urdf["sha256"]:
-        raise ValueError(
-            f"{DATA_PATH.name} was not retargeted with assets/urdf/{_expected_urdf['file']} "
-            "(different hand mount or arm model). Retarget again with that file as --right-urdf."
-        )
+    # The left model is checked only when the left hand was retargeted (--hands left/both);
+    # a left arm at rest does not depend on its hand mount.
+    _retargeted = str(_f.attrs.get("retargeted_hands", "right"))
+    _checked_sides = {"right": ("right",), "left": ("left",), "both": ("left", "right")}[_retargeted]
+    for _side in _checked_sides:
+        _expected_urdf = _asset_record["single_arm_urdf"][_side]
+        if _f.attrs.get(f"{_side}_urdf_sha256", "") != _expected_urdf["sha256"]:
+            raise ValueError(
+                f"{DATA_PATH.name} was not retargeted with assets/urdf/{_expected_urdf['file']} "
+                f"(different hand mount or arm model). Retarget again with that file as --{_side}-urdf."
+            )
     _ref_bases = np.concatenate(
         [np.asarray(_f["base_translation"], np.float64), np.asarray(_f["base_rpy"], np.float64)],
         axis=1,
