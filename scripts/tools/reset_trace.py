@@ -34,11 +34,11 @@ class ResetTrace:
         self.unavailable = {}
         self.robots = {name: env.scene[name] for name, _, _ in env.ref_hands}
 
-    def _optional(self, result, key, owner, attribute, call=False):
+    def _optional(self, result, key, owner, attribute, call=False, **kwargs):
         try:
             value = getattr(owner, attribute)
             if call:
-                value = value()
+                value = value(**kwargs)
             if value is None:
                 raise AttributeError("returned None")
             result[key] = array(value)
@@ -70,6 +70,22 @@ class ResetTrace:
             result[f"objects/physx/{getter}"] = array(getattr(view, getter)())
         result["reference_frame"] = array(self.env.frame_idx)
         result["action_manager_input"] = array(self.env.action_manager.action)
+        # Read the existing cache directly: sensor.data would trigger a lazy update.
+        for side, keys in getattr(self.env, "hand_contact_sensor_keys", {}).items():
+            for index, name in enumerate(keys):
+                sensor = self.env.scene[name]
+                prefix = f"contact/{side}/{index}"
+                cache = getattr(sensor, "_data", None)
+                for attribute in ("net_forces_w", "force_matrix_w"):
+                    self._optional(result, f"{prefix}/cached/{attribute}", cache, attribute)
+                try:
+                    view = sensor.contact_physx_view
+                except (AttributeError, RuntimeError) as exc:
+                    self.unavailable[f"{prefix}/physx"] = str(exc)
+                    continue
+                for getter in ("get_net_contact_forces", "get_contact_force_matrix"):
+                    self._optional(result, f"{prefix}/physx/{getter}", view, getter,
+                                   call=True, dt=float(self.env.cfg.sim.dt))
         return result
 
     def reset_before(self):
@@ -119,7 +135,9 @@ class ResetTrace:
         group.attrs["unavailable_fields_json"] = json.dumps(self.unavailable)
         group.attrs["joint_names_json"] = json.dumps({k: list(v.joint_names) for k, v in self.robots.items()})
         group.attrs["link_names_json"] = json.dumps({k: list(v.body_names) for k, v in self.robots.items()})
-        group.attrs["trace_version"] = 2
+        group.attrs["trace_version"] = 3
+        group.attrs["contact_mapping_json"] = json.dumps(getattr(self.env, "hand_contact_sensor_keys", {}))
+        group.attrs["contact_force_semantics"] = "PhysX force = impulse / physics_dt; cached sensor buffers may be stale. Filtered matrix covers configured filters only; total force does not identify the other body."
         group.attrs["link_transform_semantics"] = "PhysX native (x,y,z,qx,qy,qz,qw); frame follows simulation subspace; no kinematic refresh is forced"
         group.attrs["link_velocity_semantics"] = "PhysX world linear velocity at link COM followed by angular velocity"
         group.attrs["buffer_semantics"] = "buffered fields may be stale between sim.step and scene.update; use physx for fresh values"

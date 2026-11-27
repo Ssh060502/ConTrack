@@ -7,10 +7,12 @@ MASS=1.0
 FRICTION=original
 GPU=0
 EPISODES=10
+EXTRA=()
 SESSION="$REPO_ROOT/logs/rsl_rl/sharpa_crx_hammer_baseline/grab-s1_hammer_use_1-crx_sharpa-slow3-cal1122-2026_11_24-14_17_44_cal1122_env8000"
 MODEL=model_1999.pt
 while [[ $# -gt 0 ]]; do
     case "$1" in
+        --trace-reset) EXTRA+=(--trace_reset); shift;;
         --mass-scale|--friction|--gpu|--episodes|--session|--model)
             if [[ $# -lt 2 ]]; then echo "Missing value for $1" >&2; exit 2; fi
             case "$1" in
@@ -24,6 +26,7 @@ while [[ $# -gt 0 ]]; do
             shift 2;;
         --help|-h)
             echo 'Usage: bash scripts/collect_crx_hammer.sh --mass-scale 6 --friction original --gpu 0 --episodes 10'
+            echo 'Optional: --trace-reset (records reset and first physics substeps in episodes.h5)'
             exit 0;;
         *) echo "Unknown option: $1" >&2; exit 2;;
     esac
@@ -46,7 +49,7 @@ fi
     --num_envs 1 --seed 42 --deterministic_start \
     --collect_trajectories "$OUTPUT/episodes.h5" --episodes "$EPISODES" \
     --pose_break_mode log-only --video --video_folder "$OUTPUT/videos" \
-    --headless --device cuda:0 2>&1 | tee "$OUTPUT/run.log"
+    --headless --device cuda:0 "${EXTRA[@]}" 2>&1 | tee "$OUTPUT/run.log"
 python - "$OUTPUT/episodes.h5" "$EPISODES" <<'PY'
 import sys
 import h5py

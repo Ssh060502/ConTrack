@@ -146,8 +146,6 @@ def main(
         if "Crx-Sharpa" in args_cli.task:
             from ConTrack.tasks.manager_based.mimic_crx_sharpa import mdp as sharpa_mdp
             collection_robot_cfg = env_cfg.scene.crx_sharpa
-            if args_cli.trace_reset:
-                raise ValueError("CRX collection supports episodes/videos; reset substep tracing is not yet supported")
         else:
             from ConTrack.tasks.manager_based.mimic_rby1a_sharpa import mdp as sharpa_mdp
             collection_robot_cfg = env_cfg.scene.rby1a_sharpa

@@ -58,6 +58,29 @@ def environment():
 
 
 class TraceTests(unittest.TestCase):
+    def test_contact_readback_is_fresh_without_updating_cache(self):
+        env = environment()
+        class ContactView:
+            def get_net_contact_forces(self, dt):
+                return np.array([[env.sim.view.position[0, 0] / dt, 0., 0.]])
+            def get_contact_force_matrix(self, dt):
+                return self.get_net_contact_forces(dt)[:, None, :]
+        sensor = SimpleNamespace(_data=SimpleNamespace(net_forces_w=np.zeros((1, 1, 3)),
+                                 force_matrix_w=None), contact_physx_view=ContactView())
+        env.hand_contact_sensor_keys = {"right": ["finger_sensor"]}
+        env.scene["finger_sensor"] = sensor
+        trace = trace_module.ResetTrace(env)
+        trace.install()
+        try:
+            trace.reset_before(); trace.reset_after(); trace.begin_control(0)
+            env.sim.step(); env.sim.step(); trace.end_control()
+            after = trace.records[0]["substeps"][0]["after"]
+            self.assertAlmostEqual(after["contact/right/0/physx/get_net_contact_forces"][0, 0], 12.)
+            self.assertEqual(after["contact/right/0/cached/net_forces_w"].max(), 0.)
+            self.assertEqual(len(env.sim.calls), 2)
+        finally:
+            trace.restore()
+
     def test_link_report_names_sign_invariance_and_velocity(self):
         key = "robots/robot/physx/get_link_transforms"
         velocity_key = "robots/robot/physx/get_link_velocities"
