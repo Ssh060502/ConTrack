@@ -8,11 +8,16 @@ FRICTION=original
 GPU=0
 EPISODES=10
 EXTRA=()
+DIAGNOSTIC_SUFFIX=
 SESSION="$REPO_ROOT/logs/rsl_rl/sharpa_crx_hammer_baseline/grab-s1_hammer_use_1-crx_sharpa-slow3-cal1122-2026_11_24-14_17_44_cal1122_env8000"
 MODEL=model_1999.pt
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --trace-reset) EXTRA+=(--trace_reset); shift;;
+        --diagnostic-no-self-collisions)
+            EXTRA+=(--diagnostic_no_self_collisions)
+            DIAGNOSTIC_SUFFIX=_diagnostic_no_self_collisions
+            shift;;
         --mass-scale|--friction|--gpu|--episodes|--session|--model)
             if [[ $# -lt 2 ]]; then echo "Missing value for $1" >&2; exit 2; fi
             case "$1" in
@@ -27,6 +32,7 @@ while [[ $# -gt 0 ]]; do
         --help|-h)
             echo 'Usage: bash scripts/collect_crx_hammer.sh --mass-scale 6 --friction original --gpu 0 --episodes 10'
             echo 'Optional: --trace-reset (records reset and first physics substeps in episodes.h5)'
+            echo 'Diagnostic only: --diagnostic-no-self-collisions (keeps hand-object collisions)'
             exit 0;;
         *) echo "Unknown option: $1" >&2; exit 2;;
     esac
@@ -36,7 +42,7 @@ done
 }
 [[ -f "$SESSION/$MODEL" ]] || { echo "Missing checkpoint: $SESSION/$MODEL" >&2; exit 2; }
 mkdir -p outputs/physics_validation
-OUTPUT="$(mktemp -d "$REPO_ROOT/outputs/physics_validation/crx_hammer_mass${MASS}_friction${FRICTION}_$(date +%Y%m%d_%H%M%S)_XXXXXX")"
+OUTPUT="$(mktemp -d "$REPO_ROOT/outputs/physics_validation/crx_hammer_mass${MASS}_friction${FRICTION}${DIAGNOSTIC_SUFFIX}_$(date +%Y%m%d_%H%M%S)_XXXXXX")"
 echo "Outputs: $OUTPUT"
 PHYSICS=(env -u CONTRACK_SHARPA_OBJECT_FRICTION
     "CUDA_VISIBLE_DEVICES=$GPU" "CONTRACK_SHARPA_OBJECT_MASS_SCALE=$MASS")
