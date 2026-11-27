@@ -11,7 +11,7 @@ import uuid
 import numpy as np
 
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
-from scripts.tools.history_dataset import load_episodes, split_episodes, fit_normalization, make_manifest, HistoryWindows, restore_manifest_split
+from scripts.tools.history_dataset import load_episodes, split_episodes, fit_normalization, make_manifest, HistoryWindows, restore_manifest_split, select_state_features
 from scripts.tools.history_evaluation import evaluate_history
 
 
@@ -20,6 +20,8 @@ def main():
     parser.add_argument('--inputs',nargs='+',required=True,help='Collection files or directories recursively containing episodes.h5')
     parser.add_argument('--tool',choices=('mug','waterbottle','hammer','fryingpan','flashlight','cylinder'),default='waterbottle')
     parser.add_argument('--robot',choices=('rby1a','crx'),default='rby1a')
+    parser.add_argument('--state-features',choices=('all','joints'),default='all',
+                        help='joints excludes contact forces from BOTH history states and state deltas')
     parser.add_argument('--prepare-only',action='store_true',help='Audit/split without importing torch')
     parser.add_argument('--split-unit',choices=('episode','file'),default='episode')
     parser.add_argument('--split-manifest',help='Freeze data membership/splits from an earlier manifest, matching content hashes')
@@ -51,6 +53,7 @@ def main():
         print(f'[history] Frozen manifest restored by content hash; ignored {available_count-len(episodes)} extra episodes.',flush=True)
     else:
         splits=split_episodes(episodes,args.seed,args.split_unit)
+    episodes,info=select_state_features(episodes,info,args.state_features)
     stats=fit_normalization(episodes,splits['train'])
     manifest=make_manifest(episodes,splits,info,args.history,args.stride,args.split_unit)
     output=(Path(args.output_dir).expanduser().resolve() if args.output_dir else
@@ -60,6 +63,7 @@ def main():
     (output/'config.json').write_text(json.dumps(vars(args),indent=2))
     np.savez(output/'normalization.npz',**stats)
     print(f'[history] {len(episodes)} unique episodes; windows={manifest["windows"]}',flush=True)
+    print(f'[history] State features: {args.state_features}, dimension={len(info["feature_names"])}; action dimension={info["action_dim"]}',flush=True)
     print(f'[history] {manifest["warning"]}',flush=True)
     print(f'[history] Outputs: {output}',flush=True)
     if args.prepare_only:
@@ -113,7 +117,7 @@ def main():
                 print(f'[history] epoch={epoch} train={total/count:.4f} val={val["loss"]:.4f} mass_mae={val["mass_mae_kg"]:.4f}kg friction_mae={val["friction_mae"]:.4f}',flush=True)
                 payload=dict(model_state_dict=model.state_dict(),architecture=architecture,normalization=stats,
                              feature_names=info['feature_names'],control_dt=info['control_dt'],config=vars(args),epoch=epoch,
-                             data_schema=dict(version='contrack_history_v1',robot=args.robot,references=info['references'],hand_mapping=info['hand_mapping'],
+                             data_schema=dict(version='contrack_history_v1',robot=args.robot,state_features=args.state_features,references=info['references'],hand_mapping=info['hand_mapping'],
                                               contact_mapping=info['contact_mapping'],
                                               action_order='applied_residual_then_joint_targets_in_sorted_hand_order',
                                               parameter_order=['log_mass_kg','log_object_friction']),

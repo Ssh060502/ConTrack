@@ -9,7 +9,7 @@ import sys
 import uuid
 
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
-from scripts.tools.history_dataset import load_episodes,restore_manifest_split,HistoryWindows
+from scripts.tools.history_dataset import load_episodes,restore_manifest_split,HistoryWindows,select_state_features
 from scripts.tools.history_evaluation import evaluate_history
 
 
@@ -27,6 +27,7 @@ def main():
     config=saved['config'];manifest=json.loads((run/'manifest.json').read_text())
     episodes,info=load_episodes(args.inputs,config['tool'],config.get('robot','rby1a'))
     episodes,splits=restore_manifest_split(episodes,info,manifest)
+    episodes,info=select_state_features(episodes,info,config.get('state_features','all'))
     architecture=saved['architecture']
     if architecture['state_dim']!=len(info['feature_names']) or architecture['action_dim']!=info['action_dim']:
         raise ValueError('Checkpoint feature dimensions do not match data')

@@ -1,12 +1,12 @@
 """Simulator-independent, causal history windows from ConTrack episode H5."""
 from __future__ import annotations
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 import hashlib
 import json
 from pathlib import Path
 import numpy as np
 import h5py
-from scripts.tools.adaptation_profiles import collection_robot
+from scripts.tools.adaptation_profiles import collection_robot,history_state_indices
 
 
 @dataclass
@@ -148,6 +148,20 @@ def split_episodes(episodes, seed=42, unit='episode'):
     return result
 
 
+def select_state_features(episodes, info, mode='all'):
+    """Select inputs AFTER restoring raw-episode identity/splits, not before hashing.
+
+    Digests continue to identify the original unmodified recording. This allows
+    paired feature ablations to use exactly the same episodes and decision times.
+    """
+    names=info['feature_names']
+    ids=history_state_indices(names,mode)
+    selected=[replace(e,state=e.state[:,ids].copy()) for e in episodes]
+    result=dict(info,feature_names=[names[i] for i in ids],state_features=mode,
+                source_feature_names=names)
+    return selected,result
+
+
 def fit_normalization(episodes, train_ids):
     state = np.concatenate([episodes[i].state for i in train_ids]).astype(np.float64)
     action = np.concatenate([episodes[i].action for i in train_ids]).astype(np.float64)
@@ -164,7 +178,10 @@ def restore_manifest_split(episodes, info, manifest):
     """Restore exact episode membership by content hash, even after copying files."""
     if manifest.get('robot') is not None and info.get('robot') != manifest['robot']:
         raise ValueError('Frozen manifest robot mismatch')
-    for key in ('feature_names','action_dim','control_dt','references','hand_mapping','contact_mapping'):
+    expected_names=manifest.get('source_feature_names',manifest['feature_names'])
+    if info['feature_names'] != expected_names:
+        raise ValueError('Frozen manifest source feature schema mismatch')
+    for key in ('action_dim','control_dt','references','hand_mapping','contact_mapping'):
         if info.get(key) != manifest.get(key):
             raise ValueError(f'Frozen manifest schema mismatch: {key}')
     available = {e.digest:e for e in episodes}
@@ -225,7 +242,9 @@ class HistoryWindows:
 def make_manifest(episodes, splits, info, history, stride, unit):
     return dict(schema='contrack_history_v1',history_steps=history,stride=stride,split_unit=unit,
                 warning='Episode splits share collection batches; not independent batch or unseen-condition validation.' if unit=='episode' else 'Held-out collection files, same physical conditions.',
-                input='joint positions/velocities + simulated net link forces + past applied residual actions, actual actuator joint targets, and observed state deltas; no reference sequence/object ground truth/oracle inputs',
+                input=('joint positions/velocities + past manager actions, actuator joint targets and joint-state deltas; no contact forces/reference/object ground truth/oracle inputs'
+                       if info.get('state_features')=='joints' else
+                       'joint positions/velocities + simulated net link forces + past applied residual actions, actual actuator joint targets, and observed state deltas; no reference sequence/object ground truth/oracle inputs'),
                 targets='log(actual_mass_kg), log(object_material_friction); normalized next-state delta',
                 **info,episodes=[dict(id=e.identifier,source=e.source,digest=e.digest,condition=e.condition,steps=len(e.action)) for e in episodes],
                 splits={key:[episodes[i].identifier for i in ids] for key,ids in splits.items()},

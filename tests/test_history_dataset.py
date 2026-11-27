@@ -5,7 +5,7 @@ import tempfile
 import unittest
 import numpy as np
 import h5py
-from scripts.tools.history_dataset import Episode,HistoryWindows,fit_normalization,window,split_episodes,load_episodes,physical_label,restore_manifest_split,make_manifest
+from scripts.tools.history_dataset import Episode,HistoryWindows,fit_normalization,window,split_episodes,load_episodes,physical_label,restore_manifest_split,make_manifest,select_state_features
 
 
 def example(index=0,condition='a',source='batch0'):
@@ -14,6 +14,26 @@ def example(index=0,condition='a',source='batch0'):
 
 
 class HistoryDataTests(unittest.TestCase):
+    def test_joint_only_uses_same_raw_split_and_force_cannot_enter_tokens(self):
+        episodes=[example(i,'a' if i<3 else 'b') for i in range(6)]
+        info=dict(feature_names=['hand0/qpos/0','contact/right/0/net_force_w/0','hand0/qvel/0'],
+                  action_dim=2,control_dt=1/60,references=['waterbottle.h5'],hand_mapping=None,contact_mapping=None)
+        splits=split_episodes(episodes)
+        full=make_manifest(episodes,splits,info,4,1,'episode')
+        restored,old_splits=restore_manifest_split(episodes,info,full)
+        selected,selected_info=select_state_features(restored,info,'joints')
+        self.assertEqual([e.digest for e in selected],[e.digest for e in episodes])
+        self.assertEqual(selected_info['feature_names'],['hand0/qpos/0','hand0/qvel/0'])
+        new=make_manifest(selected,old_splits,selected_info,4,1,'episode')
+        _,new_splits=restore_manifest_split(episodes,info,new)
+        self.assertEqual(new_splits,splits)
+        stats=fit_normalization(selected,splits['train'])
+        token=window(selected[0],2,4,stats)['history']
+        changed=copy.deepcopy(episodes);changed[0].state[:,1]=1e9
+        alternate,_=select_state_features(changed,info,'joints')
+        np.testing.assert_array_equal(window(alternate[0],2,4,stats)['history'],token)
+        np.testing.assert_array_equal(selected[0].state,episodes[0].state[:,[0,2]])
+
     def test_frozen_membership_survives_path_changes_and_ignores_extra_data(self):
         episodes=[example(i,'a' if i<3 else 'b') for i in range(6)]
         splits=split_episodes(episodes)

@@ -97,6 +97,28 @@ class ContextTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError,'reference/calibration'):
                 HistoryContextWrapper(env,path,'crx','hammer','different.h5')
 
+    def test_joint_only_online_features_ignore_force_sensor_values(self):
+        with tempfile.TemporaryDirectory() as directory:
+            env,path,_=self.make(directory)
+            saved=torch.load(path,weights_only=False)
+            saved['architecture']['state_dim']=4
+            saved['model_state_dict']=HistoryEncoder(**saved['architecture']).state_dict()
+            saved['feature_names']=saved['feature_names'][:4]
+            saved['data_schema']['state_features']='joints'
+            for name in ('state_mean','state_std'):saved['normalization'][name]=saved['normalization'][name][:4]
+            torch.save(saved,path)
+            wrapper=HistoryContextWrapper(env,path,'crx','hammer','hammer-crx.h5')
+            wrapper.reset()
+            state,names=live_state(env,'joints')
+            env.scene['contact0'].data.net_forces_w.fill_(float('nan'))
+            changed,changed_names=live_state(env,'joints')
+            torch.testing.assert_close(state,changed)
+            self.assertEqual(names,changed_names)
+            self.assertEqual(len(names),4)
+            wrapper.step(torch.ones(2,2))
+            self.assertEqual(wrapper.tokens.shape[-1],12)
+            wrapper.verify_frozen()
+
     def test_residual_optimization_changes_neither_encoder_nor_base(self):
         from rsl_rl_contrack.modules.actor_critic import ActorCritic
         from rsl_rl_contrack.modules.oracle_adapter import OracleAdapterActorCritic,frozen_digest

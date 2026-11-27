@@ -30,3 +30,14 @@ def collection_robot(metadata):
         return 'rby1a'
     # Legacy collections lack task metadata. New CRX filenames are explicit.
     return 'crx' if 'crx_sharpa' in metadata.get('reference_path', '').lower() else 'rby1a'
+
+
+def history_state_indices(names, mode='all'):
+    if mode == 'all':
+        return list(range(len(names)))
+    if mode != 'joints':
+        raise ValueError(f'Unknown history state feature mode: {mode}')
+    ids=[i for i,name in enumerate(names) if '/qpos/' in name or '/qvel/' in name]
+    if not ids:
+        raise ValueError('No joint position/velocity history features')
+    return ids

@@ -9,7 +9,7 @@ import sys
 import uuid
 
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
-from scripts.tools.history_dataset import load_episodes,restore_manifest_split
+from scripts.tools.history_dataset import load_episodes,restore_manifest_split,select_state_features
 from scripts.tools.history_timeline import audit_forces,force_series,predict_timeline
 
 
@@ -34,13 +34,15 @@ def main():
     episodes,info=load_episodes(args.inputs,cfg['tool'],cfg.get('robot','rby1a'))
     manifest=json.loads((run/'manifest.json').read_text())
     episodes,splits=restore_manifest_split(episodes,info,manifest)
+    force_episodes,force_names=episodes,info['feature_names']
+    episodes,info=select_state_features(episodes,info,cfg.get('state_features','all'))
     if saved['feature_names']!=info['feature_names'] or arch['action_dim']!=info['action_dim']:
         raise ValueError('Checkpoint and collection feature schema differ')
     model=HistoryEncoder(**arch).to(args.device)
     model.load_state_dict(saved['model_state_dict'],strict=True)
     destination=run/'timeline_diagnostics'/f'{datetime.now():%Y%m%d_%H%M%S}_{uuid.uuid4().hex[:6]}'
     destination.mkdir(parents=True)
-    audit=audit_forces(episodes,info['feature_names'],info['control_dt'],args.force_threshold)
+    audit=audit_forces(force_episodes,force_names,info['control_dt'],args.force_threshold)
     (destination/'force_audit.json').write_text(json.dumps(audit,indent=2),encoding='utf-8')
     ranked=sorted(audit['episodes'],key=lambda r:r['peak_force_N'],reverse=True)
     print('[force] Audit includes all original split episodes; top peaks:',flush=True)
@@ -68,7 +70,7 @@ def main():
             if not selected:continue
             if plt is not None:
                 episode=episodes[episode_id]
-                norms,_=force_series(episode,info['feature_names'])
+                norms,_=force_series(force_episodes[episode_id],force_names)
                 times=[r['time_s'] for r in selected]
                 figure,axes=plt.subplots(3,1,figsize=(11,8),sharex=True)
                 for ax,key,label in zip(axes[:2],('mass_kg','friction'),('Mass (kg)','Object friction')):
@@ -81,7 +83,7 @@ def main():
                 axes[2].set_ylabel('Max link force (N)');axes[2].set_xlabel('Episode time (s)')
                 axes[2].grid(alpha=.25)
                 figure.suptitle(f"{split} episode {episode_id}: {episode.condition}\n"
-                               'Predictions start at t=1; net link force is not a grasp/success detector')
+                               f"Encoder inputs: {cfg.get('state_features','all')}; force below is diagnostic, not a grasp detector")
                 figure.tight_layout()
                 figure.savefig(destination/'plots'/f'{split}_episode_{episode_id:04d}.png',dpi=150)
                 plt.close(figure)
@@ -90,6 +92,7 @@ def main():
     (destination/'summary.json').write_text(json.dumps(dict(
         checkpoint=str(run/'history_best.pt'),epoch=saved['epoch'],window_count=len(all_rows),
         prediction_splits=args.splits,force_audit_episode_count=len(episodes),
+        state_features=cfg.get('state_features','all'),
         control_dt=info['control_dt'],history=arch['history'],
         note='Existing held-out splits re-analyzed; not a new independent test. '
              'No training, force cleaning, or automatic grasp phase labels. '
