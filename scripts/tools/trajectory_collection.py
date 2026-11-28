@@ -218,6 +218,8 @@ def collect(env, policy, policy_module, app, output, episodes, max_steps, physic
             hf.attrs["pose_break_mode"] = metadata.get("pose_break_mode", "strict")
             hf.attrs["video_folder"] = "" if video_folder is None else str(video_folder)
             hf.attrs["reset_trace_enabled"] = trace is not None
+            hf.flush()
+            print("[collect] Metadata saved; resetting environment", flush=True)
             env.reset()
             policy_module.reset(torch.ones(1, device=base.device, dtype=torch.bool))
             obs = env.get_observations()
@@ -262,13 +264,19 @@ def collect(env, policy, policy_module, app, output, episodes, max_steps, physic
                     video_writer.append_data(terminal["video_frame"] if ended else render_frame())
                 policy_module.reset(done)
                 steps += 1
+                if len(transitions) == 1 or len(transitions) % 120 == 0:
+                    print(f"[collect] progress episode={completed} steps={len(transitions)} total_steps={steps}", flush=True)
                 if ended:
                     group = hf.create_group(f"episodes/{completed:06d}")
                     write_episode(group, states, observations, transitions, True)
                     if trace is not None:
                         trace.write(group.create_group("reset_trace"), completed)
+                    # Persist the episode before potentially slow video finalization.
+                    completed += 1
+                    hf.attrs["completed_episodes"] = completed
+                    hf.flush()
                     reasons = [k for k, v in terminal["reasons"].items() if bool(v)]
-                    print(f"[collect] episode={completed} steps={len(transitions)} reasons={reasons}", flush=True)
+                    print(f"[collect] episode={completed - 1} steps={len(transitions)} reasons={reasons}", flush=True)
                     print(f"[diagnostic] frame={int(diagnostic['reference_frame'])} "
                           f"pos_error_m={diagnostic['position_error'].tolist()} "
                           f"pos_threshold_m={float(diagnostic['position_threshold'])} "
@@ -277,9 +285,6 @@ def collect(env, policy, policy_module, app, output, episodes, max_steps, physic
                     if video_writer is not None:
                         video_writer.close()
                         video_writer = None
-                    completed += 1
-                    hf.attrs["completed_episodes"] = completed
-                    hf.flush()
                     states, observations, transitions = [snapshot(base)], [], []
                     if completed < episodes and steps < max_steps:
                         video_writer = start_video(completed)
