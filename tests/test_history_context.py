@@ -10,13 +10,42 @@ AVAILABLE=importlib.util.find_spec('torch') is not None and importlib.util.find_
 if AVAILABLE:
     import torch
     from tensordict import TensorDict
-    from rsl_rl_contrack.env.history_context import HistoryContextWrapper,live_state
+    from rsl_rl_contrack.env.history_context import HistoryContextWrapper,StateOnlyContextWrapper,live_state
     from rsl_rl_contrack.modules.history_encoder import HistoryEncoder
     from scripts.tools.history_dataset import Episode,window
 
 
 @unittest.skipUnless(AVAILABLE,'Needs torch/tensordict; no simulator needed')
 class ContextTests(unittest.TestCase):
+    def test_state_only_has_constant_context_and_no_privileged_inputs(self):
+        with tempfile.TemporaryDirectory() as directory:
+            env,_,_=self.make(directory)
+            wrapper=StateOnlyContextWrapper(env,8)
+            wrapper.reset()
+            for _ in range(3):
+                obs,_,_,_=wrapper.step(torch.ones(2,2))
+                self.assertNotIn('oracle',obs.keys())
+                torch.testing.assert_close(obs['history'],torch.zeros(2,8))
+                torch.testing.assert_close(obs['policy'],env.get_observations()['policy'])
+            with self.assertRaisesRegex(ValueError,'positive'):
+                StateOnlyContextWrapper(env,0)
+
+    def test_random_encoder_is_reproducible_frozen_and_rng_isolated(self):
+        with tempfile.TemporaryDirectory() as directory:
+            env,path,_=self.make(directory)
+            rng=torch.random.get_rng_state().clone()
+            a=HistoryContextWrapper(env,path,'crx','hammer','hammer-crx.h5',random_seed=123)
+            torch.testing.assert_close(torch.random.get_rng_state(),rng)
+            b=HistoryContextWrapper(env,path,'crx','hammer','hammer-crx.h5',random_seed=123)
+            c=HistoryContextWrapper(env,path,'crx','hammer','hammer-crx.h5',random_seed=124)
+            pretrained=HistoryContextWrapper(env,path,'crx','hammer','hammer-crx.h5')
+            self.assertEqual(a.encoder_digest,b.encoder_digest)
+            self.assertNotEqual(a.encoder_digest,c.encoder_digest)
+            self.assertNotEqual(a.encoder_digest,pretrained.encoder_digest)
+            for key in a.stats:torch.testing.assert_close(a.stats[key],pretrained.stats[key])
+            a.reset();a.step(torch.ones(2,2));a.verify_frozen()
+            self.assertTrue(all(not p.requires_grad and p.grad is None for p in a.model.parameters()))
+
     def make(self,directory,robot='crx'):
         class Env:
             num_envs=2;num_actions=2;device='cpu';step_dt=1/60

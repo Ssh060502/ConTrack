@@ -22,8 +22,10 @@ from scripts.tools.adaptation_profiles import robot_profile, action_indices
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument("--tool", choices=("mug", "waterbottle", "hammer", "fryingpan", "flashlight", "cylinder"), default="mug")
 parser.add_argument("--robot", choices=("rby1a", "crx"), default="rby1a")
-parser.add_argument('--context-source',choices=('oracle','history'),default='oracle')
+parser.add_argument('--context-source',choices=('oracle','state','random-history','history'),default='oracle')
 parser.add_argument('--history-checkpoint',help='Frozen history_best.pt; required with --context-source history')
+parser.add_argument('--encoder-seed',type=int,default=123,help='Isolated initialization seed for random-history')
+parser.add_argument('--context-dim',type=int,default=64,help='State-only zero padding; match the history latent dimension')
 parser.add_argument("--mode", choices=("train", "evaluate"), default="train")
 parser.add_argument("--session", default=None)
 parser.add_argument("--base_checkpoint", default=None)
@@ -94,12 +96,14 @@ if args.oracle_mass_scale is not None and (args.mode != 'evaluate' or args.polic
     parser.error('--oracle-mass-scale is only for adapter evaluation')
 if args.oracle_mass_scale is not None and (not math.isfinite(args.oracle_mass_scale) or args.oracle_mass_scale<=0):
     parser.error('--oracle-mass-scale must be finite and positive')
-if args.context_source == 'history' and not args.history_checkpoint:
-    parser.error('--context-source history requires --history-checkpoint')
-if args.context_source == 'oracle' and args.history_checkpoint:
-    parser.error('--history-checkpoint requires --context-source history')
-if args.context_source == 'history' and args.oracle_mass_scale is not None:
-    parser.error('History control does not consume oracle parameter inputs')
+if args.context_source in ('history','random-history') and not args.history_checkpoint:
+    parser.error('History modes require --history-checkpoint (architecture, schema and train-only normalization)')
+if args.context_source in ('oracle','state') and args.history_checkpoint:
+    parser.error('--history-checkpoint requires a history context source')
+if args.context_source != 'oracle' and args.oracle_mass_scale is not None:
+    parser.error('Only oracle control consumes oracle parameter inputs')
+if args.encoder_seed < 0 or args.context_dim <= 0:
+    parser.error('Encoder seed must be nonnegative and context dimension positive')
 profile = robot_profile(args.robot)
 os.environ[profile['data_env']] = str(data)
 # Establish the original nominal mass before per-environment scaling. Do not let
@@ -170,10 +174,15 @@ def main():
         reward_env = ConsMimicRewardWrapper(wrapped, raw.unwrapped)
         history_wrapper = None
         context_key = 'oracle'
-        if args.context_source == 'history':
+        if args.context_source in ('history','random-history'):
             from rsl_rl_contrack.env.history_context import HistoryContextWrapper
-            history_wrapper = HistoryContextWrapper(reward_env,args.history_checkpoint,args.robot,args.tool,data)
+            history_wrapper = HistoryContextWrapper(reward_env,args.history_checkpoint,args.robot,args.tool,data,
+                random_seed=args.encoder_seed if args.context_source=='random-history' else None)
             env = history_wrapper
+            context_key = 'history'
+        elif args.context_source == 'state':
+            from rsl_rl_contrack.env.history_context import StateOnlyContextWrapper
+            env = StateOnlyContextWrapper(reward_env,args.context_dim)
             context_key = 'history'
         else:
             env = OracleContextWrapper(reward_env, context)
@@ -216,6 +225,8 @@ def main():
                 raise ValueError('Adapter context source differs (oracle vs history); retrain the residual MLP')
             if history_wrapper is not None and run['metadata'].get('history_encoder_digest') != history_wrapper.encoder_digest:
                 raise ValueError('History encoder differs from the adapter training encoder')
+            if args.context_source == 'state' and run['metadata'].get('context_dim',64) != args.context_dim:
+                raise ValueError('State-only context dimension differs from training')
             if run['metadata'].get('task',task) != task:
                 raise ValueError('Adapter checkpoint belongs to a different robot/task')
             if Path(run["metadata"]["reference_path"]).name != data.name:
@@ -227,7 +238,7 @@ def main():
             config["policy"]["base_checkpoint"] = str(base_checkpoint)
         directory = (Path(args.output_dir).expanduser().resolve() if args.output_dir else
                      Path(args.output_root).expanduser().resolve() / (
-                         f"{('crx_' if args.robot=='crx' else '')}{args.tool}_{args.mode}_{args.policy}_{('history_' if args.context_source=='history' else '')}{datetime.now():%Y%m%d_%H%M%S}_{uuid.uuid4().hex[:6]}"))
+                         f"{('crx_' if args.robot=='crx' else '')}{args.tool}_{args.mode}_{args.policy}_{(args.context_source+'_' if args.context_source!='oracle' else '')}{datetime.now():%Y%m%d_%H%M%S}_{uuid.uuid4().hex[:6]}"))
         directory.mkdir(parents=True)
         cfg.log_dir = str(directory)
         config["wandb_run_name"] = directory.name
@@ -237,6 +248,9 @@ def main():
         metadata = {"tool":args.tool, "robot":args.robot, "base_checkpoint":str(base_checkpoint), "reference_path":str(data),
                     'context_source':args.context_source,'history_checkpoint':args.history_checkpoint,
                     'history_encoder_digest':history_wrapper.encoder_digest if history_wrapper is not None else None,
+                    'encoder_initialization':'random' if args.context_source=='random-history' else 'pretrained' if history_wrapper is not None else None,
+                    'encoder_seed':args.encoder_seed if args.context_source=='random-history' else None,
+                    'context_dim':int(env.get_observations()[context_key].shape[-1]),
                     'history_cold_start':'zero latent until first completed transition' if history_wrapper is not None else None,
                     "seed":args.seed, "mode":args.mode, "evaluation_policy":args.policy,
                     "conditions":conditions, "reset":"reference frame 0, no curriculum, pose log-only",
@@ -244,12 +258,18 @@ def main():
                     "physics_assignment":"fixed per parallel environment",
                     "checkpoint":str(args.adapter_checkpoint or base_checkpoint), "task":task,
                     "oracle_mass_scale_override":args.oracle_mass_scale,
-                    "oracle_input_mass_kg":context[:,0].exp().cpu().tolist(),
+                    "oracle_input_mass_kg":context[:,0].exp().cpu().tolist() if args.context_source=='oracle' else None,
                     "pose_break_mode":"log-only",
                     "actor_objective":"task-only" if config["algorithm"].get("task_only",False) else "inherited CMDP",
                     "correction_scale":config["policy"]["correction_scale"]}
         (directory/"run_metadata.json").write_text(json.dumps(metadata, indent=2))
         (directory/"physics.json").write_text(json.dumps(physics, indent=2))
+        if history_wrapper is not None:
+            effective = dict(history_wrapper.saved)
+            effective['model_state_dict'] = {k:v.detach().cpu().clone() for k,v in history_wrapper.model.state_dict().items()}
+            effective['control_initialization'] = dict(source=args.context_source,seed=metadata['encoder_seed'],
+                                                       digest=history_wrapper.encoder_digest)
+            torch.save(effective,directory/'history_encoder_used.pt')
         runner_module.OracleAdapterActorCritic = OracleAdapterActorCritic
         runner = AdapterRunner(env, config, log_dir=str(directory) if args.mode=="train" else None, device=device)
         runner.history_wrapper = history_wrapper

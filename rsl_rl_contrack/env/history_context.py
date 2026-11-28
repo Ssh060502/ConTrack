@@ -34,7 +34,7 @@ def live_state(base, mode='all'):
 
 
 class HistoryContextWrapper(OracleContextWrapper):
-    def __init__(self, env, checkpoint, robot, tool, reference):
+    def __init__(self, env, checkpoint, robot, tool, reference, random_seed=None):
         self.env = env
         self.base_env = env.unwrapped
         self.saved = torch.load(checkpoint,map_location='cpu',weights_only=False)
@@ -53,8 +53,16 @@ class HistoryContextWrapper(OracleContextWrapper):
                    for name,ids,h in self.base_env.ref_hands]
         if schema.get('hand_mapping') != mapping or schema.get('contact_mapping') != self.base_env.hand_contact_sensor_keys:
             raise ValueError('History checkpoint joint/contact mapping mismatch')
-        self.model = HistoryEncoder(**self.saved['architecture']).to(env.device)
-        self.model.load_state_dict(self.saved['model_state_dict'],strict=True)
+        self.random_seed = random_seed
+        # Isolate initialization from the residual policy/exploration RNG.
+        with torch.random.fork_rng(devices=[]):
+            if random_seed is not None:
+                # Initialize CPU weights without reseeding CUDA exploration RNGs.
+                torch.random.default_generator.manual_seed(random_seed)
+            self.model = HistoryEncoder(**self.saved['architecture'])
+        if random_seed is None:
+            self.model.load_state_dict(self.saved['model_state_dict'],strict=True)
+        self.model = self.model.to(env.device)
         self.model.requires_grad_(False)
         self.model.eval()
         self.encoder_digest = frozen_digest(self.model)
@@ -116,3 +124,23 @@ class HistoryContextWrapper(OracleContextWrapper):
     def verify_frozen(self):
         if frozen_digest(self.model) != self.encoder_digest:
             raise RuntimeError('Frozen history encoder changed')
+
+
+class StateOnlyContextWrapper(OracleContextWrapper):
+    """Ablation A: constant zero context, with B/C residual input dimensions.
+
+    No history or privileged labels enter actor or critic. Zero padding keeps
+    the residual MLP architecture equal; it provides no changing information.
+    """
+    def __init__(self, env, dimension=64):
+        if dimension <= 0:
+            raise ValueError('Context dimension must be positive')
+        self.env = env
+        self.context = torch.zeros(env.num_envs, dimension, device=env.device)
+
+    def _augment(self, obs):
+        result = obs.clone(recurse=False)
+        if 'oracle' in result.keys():
+            raise ValueError('State-only control must not consume oracle labels')
+        result.set('history', self.context.clone())
+        return result
